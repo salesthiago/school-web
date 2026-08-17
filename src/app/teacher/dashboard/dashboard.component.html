@@ -1,0 +1,14 @@
+<div class="panel">
+  <h1>Área do professor</h1>
+  <p class="hello">Olá, {{ authService.currentUser()?.name }}</p>
+
+  <nav class="menu">
+    <a routerLink="/teacher/courses">Meus cursos</a>
+    <a routerLink="/teacher/modules">Módulos</a>
+    <a routerLink="/teacher/lessons">Aulas</a>
+    <a routerLink="/teacher/exams">Avaliações</a>
+    <a routerLink="/teacher/students">Alunos matriculados</a>
+  </nav>
+
+  <button class="logout-btn" (click)="logout()">Sair</button>
+</div>

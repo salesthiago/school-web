@@ -1,0 +1,19 @@
+<div class="certificates-screen">
+  <a class="back-link" routerLink="/student">← Voltar</a>
+  <h1>Meus certificados</h1>
+
+  @if (certificates().length === 0) {
+    <p class="hint">Você ainda não possui certificados emitidos.</p>
+  }
+
+  @for (cert of certificates(); track cert.id) {
+    <div class="cert-card">
+      <h3>{{ cert.moduleTitle }}</h3>
+      <p>Professor(a): {{ cert.teacherName }}</p>
+      <p>Carga horária: {{ cert.workloadHours }}h</p>
+      <p class="code">Código: {{ cert.code }}</p>
+      <button (click)="download(cert)">Baixar PDF</button>
+    </div>
+  }
+</div>
+<app-bottom-nav />

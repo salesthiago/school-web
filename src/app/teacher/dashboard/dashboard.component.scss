@@ -1,0 +1,44 @@
+.panel {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem;
+}
+
+h1 {
+  font-size: 1.3rem;
+  margin: 0 0 0.25rem;
+}
+
+.hello {
+  color: #667;
+  margin: 0 0 1.5rem;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+
+  a {
+    background: #fff;
+    border: 1px solid #e6e9f0;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    text-decoration: none;
+    color: #223;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: #c62828;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}

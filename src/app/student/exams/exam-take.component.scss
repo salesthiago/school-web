@@ -1,0 +1,68 @@
+.exam-screen {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 4rem;
+}
+
+.back-link {
+  color: #1565c0;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+h1 {
+  font-size: 1.3rem;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.question-card {
+  background: #fff;
+  border: 1px solid #e6e9f0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.question-text {
+  font-weight: 600;
+  margin: 0 0 0.6rem;
+  font-size: 0.92rem;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  font-size: 0.88rem;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background: #1565c0;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.result-card {
+  background: #fff3e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+
+  &.passed {
+    background: #e8f5e9;
+  }
+
+  h2 {
+    margin: 0 0 0.5rem;
+  }
+}

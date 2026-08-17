@@ -1,0 +1,78 @@
+<div class="dashboard">
+  <header class="greeting">
+    <p class="hello">Olá, {{ authService.currentUser()?.name }} 👋</p>
+    <h1>Vamos estudar hoje?</h1>
+  </header>
+
+  @if (loading()) {
+    <p class="hint">Carregando seus cursos...</p>
+  } @else {
+    @if (currentCourse; as current) {
+      <section class="current-course-card">
+        <p class="label">Continuando</p>
+        <h2>{{ current.course.title }} — {{ current.module.title }}</h2>
+
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="current.progress.percentage"></div>
+        </div>
+        <p class="progress-label">{{ current.progress.percentage }}% concluído</p>
+
+        <a
+          class="cta"
+          [routerLink]="['/student/course-player', current.module.id, current.progress.nextLessonId]"
+        >
+          Continuar estudando
+        </a>
+      </section>
+    }
+
+    <section class="course-list">
+      <h3>Cursos em andamento</h3>
+      @if (inProgress().length === 0) {
+        <p class="hint">Nenhum curso em andamento no momento.</p>
+      }
+      @for (item of inProgress(); track item.module.id) {
+        <a class="course-row" [routerLink]="['/student/course-player', item.module.id, item.progress.nextLessonId]">
+          <div>
+            <strong>{{ item.course.title }}</strong>
+            <span>{{ item.module.title }}</span>
+          </div>
+          <span class="percentage">{{ item.progress.percentage }}%</span>
+        </a>
+      }
+    </section>
+
+    <section class="course-list">
+      <h3>Cursos concluídos</h3>
+      @if (completed().length === 0) {
+        <p class="hint">Você ainda não concluiu nenhum módulo.</p>
+      }
+      @for (item of completed(); track item.module.id) {
+        <div class="course-row done">
+          <div>
+            <strong>{{ item.course.title }}</strong>
+            <span>{{ item.module.title }}</span>
+          </div>
+          <span class="badge">Concluído</span>
+        </div>
+      }
+    </section>
+
+    <section class="course-list">
+      <h3>Certificados disponíveis</h3>
+      @if (certificates().length === 0) {
+        <p class="hint">Seus certificados aparecerão aqui assim que forem emitidos.</p>
+      }
+      @for (cert of certificates(); track cert.id) {
+        <a class="course-row" [routerLink]="['/student/certificates']">
+          <div>
+            <strong>{{ cert.moduleTitle }}</strong>
+            <span>Código {{ cert.code }}</span>
+          </div>
+          <span class="percentage">Ver</span>
+        </a>
+      }
+    </section>
+  }
+</div>
+<app-bottom-nav />

@@ -1,0 +1,56 @@
+.certificates-screen {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 5rem;
+}
+
+.back-link {
+  color: #1565c0;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+h1 {
+  font-size: 1.3rem;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.hint {
+  color: #778;
+}
+
+.cert-card {
+  background: #fff;
+  border: 1px solid #e6e9f0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+
+  h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0.15rem 0;
+    font-size: 0.85rem;
+    color: #556;
+  }
+
+  .code {
+    font-family: monospace;
+    color: #778;
+  }
+
+  button {
+    margin-top: 0.75rem;
+    width: 100%;
+    padding: 0.65rem;
+    background: #1565c0;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}

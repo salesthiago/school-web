@@ -1,0 +1,40 @@
+.profile-screen {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 5rem;
+}
+
+.back-link {
+  color: #1565c0;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+h1 {
+  font-size: 1.3rem;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.info-card {
+  background: #fff;
+  border: 1px solid #e6e9f0;
+  border-radius: 12px;
+  padding: 1rem;
+
+  p {
+    margin: 0.4rem 0;
+    font-size: 0.9rem;
+  }
+}
+
+.logout-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: #c62828;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}

@@ -1,0 +1,16 @@
+<div class="panel">
+  <h1>Área do administrador</h1>
+  <p class="hello">Olá, {{ authService.currentUser()?.name }}</p>
+
+  <nav class="menu">
+    <a routerLink="/admin/users">Usuários</a>
+    <a routerLink="/admin/courses">Cursos</a>
+    <a routerLink="/admin/teachers">Professores</a>
+    <a routerLink="/admin/payments">Pagamentos</a>
+    <a routerLink="/admin/reports">Relatórios</a>
+    <a routerLink="/admin/settings">Identidade visual</a>
+    <a routerLink="/admin/video-settings">Integração de vídeos (Bunny.net)</a>
+  </nav>
+
+  <button class="logout-btn" (click)="logout()">Sair</button>
+</div>

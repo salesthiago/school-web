@@ -1,0 +1,36 @@
+<div class="player-screen">
+  @if (currentLesson(); as lesson) {
+    <div class="video-wrap">
+      <!-- TODO: para provedores HLS (m3u8), integrar hls.js. Streaming/CDN externo por design. -->
+      <video [src]="lesson.video.playbackUrl" controls (ended)="markWatched()"></video>
+    </div>
+
+    <div class="lesson-info">
+      <h1>{{ lesson.title }}</h1>
+      @if (progress(); as p) {
+        <p class="progress-label">{{ p.percentage }}% do módulo concluído</p>
+      }
+      @if (lesson.description) {
+        <p class="description">{{ lesson.description }}</p>
+      }
+      <button class="mark-btn" (click)="markWatched()">Marcar como assistida</button>
+    </div>
+  } @else {
+    <p class="hint">Carregando aula...</p>
+  }
+
+  <section class="lesson-list">
+    <h3>Aulas do módulo</h3>
+    @for (lesson of lessons(); track lesson.id) {
+      <button
+        class="lesson-row"
+        [class.active]="currentLesson()?.id === lesson.id"
+        (click)="selectLesson(lesson)"
+      >
+        <span>{{ lesson.order + 1 }}. {{ lesson.title }}</span>
+      </button>
+    }
+  </section>
+
+  <a class="back-link" routerLink="/student">← Voltar ao painel</a>
+</div>

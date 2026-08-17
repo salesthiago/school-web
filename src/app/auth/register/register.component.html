@@ -1,0 +1,40 @@
+<div class="auth-screen">
+  <div class="auth-card">
+    <h1>Criar conta</h1>
+    <p class="subtitle">Comece a estudar em minutos</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Nome
+        <input type="text" formControlName="name" placeholder="Seu nome" />
+      </label>
+
+      <label>
+        E-mail
+        <input type="email" formControlName="email" placeholder="voce@email.com" />
+      </label>
+
+      <label>
+        Telefone (opcional)
+        <input type="tel" formControlName="phone" placeholder="(00) 00000-0000" />
+      </label>
+
+      <label>
+        Senha
+        <input type="password" formControlName="password" placeholder="Mínimo 8 caracteres" />
+      </label>
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="form.invalid || loading()">
+        {{ loading() ? 'Criando conta...' : 'Criar conta' }}
+      </button>
+    </form>
+
+    <p class="switch">
+      Já tem conta? <a routerLink="/auth/login">Entrar</a>
+    </p>
+  </div>
+</div>

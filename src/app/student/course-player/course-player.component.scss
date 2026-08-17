@@ -1,0 +1,90 @@
+.player-screen {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+.video-wrap {
+  background: #000;
+  aspect-ratio: 16 / 9;
+
+  video {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.lesson-info {
+  padding: 1.25rem;
+
+  h1 {
+    font-size: 1.15rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .progress-label {
+    color: #1565c0;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .description {
+    color: #556;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+}
+
+.mark-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: #26a69a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lesson-list {
+  padding: 0 1.25rem;
+
+  h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+  }
+}
+
+.lesson-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #e6e9f0;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+
+  &.active {
+    border-color: #1565c0;
+    background: #eef4fc;
+    font-weight: 600;
+  }
+}
+
+.hint {
+  padding: 1.25rem;
+  color: #778;
+}
+
+.back-link {
+  display: block;
+  padding: 1.25rem;
+  color: #1565c0;
+  text-decoration: none;
+  font-size: 0.9rem;
+}

@@ -1,0 +1,130 @@
+.dashboard {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 5rem;
+}
+
+.greeting {
+  margin-bottom: 1.5rem;
+
+  .hello {
+    margin: 0 0 0.25rem;
+    color: #667;
+    font-size: 0.9rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+}
+
+.hint {
+  color: #778;
+  font-size: 0.9rem;
+}
+
+.current-course-card {
+  background: linear-gradient(135deg, #1565c0, #26a69a);
+  color: #fff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+
+  .label {
+    margin: 0 0 0.25rem;
+    font-size: 0.75rem;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+  }
+}
+
+.progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #fff;
+  border-radius: 999px;
+}
+
+.progress-label {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.cta {
+  display: block;
+  text-align: center;
+  background: #fff;
+  color: #1565c0;
+  font-weight: 700;
+  padding: 0.75rem;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.course-list {
+  margin-bottom: 2rem;
+
+  h3 {
+    font-size: 1rem;
+    margin: 0 0 0.75rem;
+  }
+}
+
+.course-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #e6e9f0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.6rem;
+  text-decoration: none;
+  color: inherit;
+
+  div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  strong {
+    font-size: 0.92rem;
+  }
+
+  span {
+    font-size: 0.78rem;
+    color: #778;
+  }
+
+  .percentage {
+    color: #1565c0;
+    font-weight: 700;
+  }
+
+  &.done {
+    opacity: 0.8;
+  }
+
+  .badge {
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+  }
+}

@@ -1,0 +1,15 @@
+<div class="profile-screen">
+  <a class="back-link" routerLink="/student">← Voltar</a>
+  <h1>Meu perfil</h1>
+
+  @if (authService.currentUser(); as user) {
+    <div class="info-card">
+      <p><strong>Nome:</strong> {{ user.name }}</p>
+      <p><strong>E-mail:</strong> {{ user.email }}</p>
+      <p><strong>Perfil:</strong> {{ user.role }}</p>
+    </div>
+  }
+
+  <button class="logout-btn" (click)="logout()">Sair</button>
+</div>
+<app-bottom-nav />
