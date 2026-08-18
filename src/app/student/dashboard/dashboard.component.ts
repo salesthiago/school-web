@@ -1,23 +1,13 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
 import { CertificatesService } from '../../core/services/certificates.service';
 import { CoursesService } from '../../core/services/courses.service';
-import { InstitutionsService } from '../../core/services/institutions.service';
-import { NotificationsService } from '../../core/services/notifications.service';
-import { AuthService } from '../../core/services/auth.service';
-import {
-  CourseModule,
-  Course,
-  ModuleProgressSummary,
-  Certificate,
-  Institution,
-} from '../../core/models/academic.model';
-import { AppNotification } from '../../core/models/notification.model';
+import { CourseModule, Course, ModuleProgressSummary, Certificate } from '../../core/models/academic.model';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
-import { IconComponent, IconName } from '../../shared/components/icon.component';
+import { DashboardShellComponent, ShellNavItem } from '../../shared/components/dashboard-shell.component';
 
 interface EnrollmentView {
   module: CourseModule;
@@ -31,19 +21,6 @@ interface RecommendedCourseView {
   priceLabel: string;
 }
 
-interface NavItem {
-  label: string;
-  link: string;
-  exact: boolean;
-  icon: IconName;
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  student: 'Aluno',
-  teacher: 'Professor',
-  admin: 'Administrador',
-};
-
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',
@@ -52,7 +29,7 @@ const currencyFormatter = new Intl.NumberFormat('pt-BR', {
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, BottomNavComponent, IconComponent],
+  imports: [CommonModule, RouterLink, BottomNavComponent, DashboardShellComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -62,14 +39,8 @@ export class DashboardComponent implements OnInit {
   completed = signal<EnrollmentView[]>([]);
   certificates = signal<Certificate[]>([]);
   recommended = signal<RecommendedCourseView[]>([]);
-  institution = signal<Institution | null>(null);
-  notifications = signal<AppNotification[]>([]);
-  unreadCount = computed(() => this.notifications().filter((n) => !n.read).length);
 
-  userMenuOpen = signal(false);
-  notifMenuOpen = signal(false);
-
-  navItems: NavItem[] = [
+  navItems: ShellNavItem[] = [
     { label: 'Dashboard', link: '/student', exact: true, icon: 'home' },
     { label: 'Meus Cursos', link: '/student/meus-cursos', exact: false, icon: 'book' },
     { label: 'Explorar Cursos', link: '/student/explorar', exact: false, icon: 'compass' },
@@ -82,12 +53,9 @@ export class DashboardComponent implements OnInit {
   ];
 
   constructor(
-    public authService: AuthService,
     private enrollmentsService: EnrollmentsService,
     private certificatesService: CertificatesService,
     private coursesService: CoursesService,
-    private institutionsService: InstitutionsService,
-    private notificationsService: NotificationsService,
   ) {}
 
   ngOnInit() {
@@ -114,8 +82,6 @@ export class DashboardComponent implements OnInit {
       });
 
     this.certificatesService.myCertificates().subscribe((certs) => this.certificates.set(certs));
-    this.institutionsService.getPublic().subscribe((institution) => this.institution.set(institution));
-    this.notificationsService.mine().subscribe((notifications) => this.notifications.set(notifications));
   }
 
   get currentCourse(): EnrollmentView | undefined {
@@ -140,29 +106,6 @@ export class DashboardComponent implements OnInit {
     let hash = 0;
     for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
     return this.thumbPalette[Math.abs(hash) % this.thumbPalette.length];
-  }
-
-  roleLabel(role: string | undefined): string {
-    return role ? (ROLE_LABELS[role] ?? role) : '';
-  }
-
-  toggleUserMenu() {
-    this.userMenuOpen.update((open) => !open);
-    this.notifMenuOpen.set(false);
-  }
-
-  toggleNotifMenu() {
-    this.notifMenuOpen.update((open) => !open);
-    this.userMenuOpen.set(false);
-  }
-
-  markNotificationRead(notification: AppNotification) {
-    if (notification.read) return;
-    this.notificationsService.markRead(notification.id).subscribe(() => {
-      this.notifications.update((list) =>
-        list.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
-      );
-    });
   }
 
   private loadRecommended(enrolledCourseIds: Set<string>) {

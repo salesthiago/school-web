@@ -1,228 +1,105 @@
-<div class="shell">
-  <aside class="sidebar">
-    <div class="brand">
-      <span class="brand-dot"></span>
-      GPschool
+<app-dashboard-shell
+  [navItems]="navItems"
+  profileLink="/student/profile"
+  searchLink="/student/explorar"
+  searchPlaceholder="Buscar cursos, módulos, aulas..."
+  mobileSubtitle="Vamos continuar seus estudos"
+>
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Aprenda no seu ritmo,<br />alcance seus objetivos</h1>
+      <p>Cursos online com certificado para impulsionar sua carreira e seus conhecimentos.</p>
+      <a class="hero-cta" routerLink="/student/explorar">Explorar cursos</a>
     </div>
+  </section>
 
-    <nav class="nav">
-      @for (item of navItems; track item.link) {
-        <a
-          [routerLink]="item.link"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: item.exact }"
-        >
-          <app-icon [name]="item.icon" />
-          {{ item.label }}
-        </a>
-      }
-    </nav>
-
-    @if (institution(); as inst) {
-      <div class="institution-card">
-        <strong>{{ inst.name }}</strong>
-        @if (inst.address) {
-          <p>{{ inst.address }}</p>
-        }
-        @if (inst.phone) {
-          <p>{{ inst.phone }}</p>
-        }
+  @if (loading()) {
+    <p class="hint">Carregando seus cursos...</p>
+  } @else {
+    <section class="course-section">
+      <div class="section-head">
+        <h2>Continue aprendendo</h2>
+        <a routerLink="/student/meus-cursos">Ver todos</a>
       </div>
-    }
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <a class="search" routerLink="/student/explorar">
-        <app-icon name="search" />
-        <span>Buscar cursos, módulos, aulas...</span>
-      </a>
-
-      <div class="topbar-actions">
-        <div class="menu-wrap">
-          <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
-            <app-icon name="bell" />
-            @if (unreadCount() > 0) {
-              <span class="badge">{{ unreadCount() }}</span>
-            }
-          </button>
-          @if (notifMenuOpen()) {
-            <div class="dropdown notif-dropdown">
-              @if (notifications().length === 0) {
-                <p class="empty">Sem notificações por enquanto.</p>
-              }
-              @for (n of notifications(); track n.id) {
-                <button type="button" class="notif-item" [class.unread]="!n.read" (click)="markNotificationRead(n)">
-                  <strong>{{ n.title }}</strong>
-                  @if (n.message) {
-                    <span>{{ n.message }}</span>
-                  }
-                </button>
+      @if (inProgress().length === 0) {
+        <p class="hint">Nenhum curso em andamento no momento.</p>
+      }
+      <div class="card-grid">
+        @for (item of inProgress(); track item.module.id) {
+          <a
+            class="course-card"
+            [routerLink]="['/student/course-player', item.module.id, item.progress.nextLessonId]"
+          >
+            <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+              @if (item.course.coverImageUrl) {
+                <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+              } @else {
+                <span>{{ initial(item.course.title) }}</span>
               }
             </div>
-          }
-        </div>
-
-        @if (authService.currentUser(); as user) {
-          <div class="menu-wrap">
-            <button type="button" class="user-btn" (click)="toggleUserMenu()">
-              @if (user.avatarUrl) {
-                <img class="avatar" [src]="user.avatarUrl" alt="" />
-              } @else {
-                <span class="avatar avatar-placeholder">{{ initial(user.name) }}</span>
-              }
-              <span class="user-info">
-                <strong>Olá, {{ user.name }}</strong>
-                <span>{{ roleLabel(user.role) }}</span>
-              </span>
-              <app-icon name="chevron-down" />
-            </button>
-            @if (userMenuOpen()) {
-              <div class="dropdown user-dropdown">
-                <a routerLink="/student/profile"><app-icon name="user" />Meu perfil</a>
-                <button type="button" (click)="authService.logout()"><app-icon name="log-out" />Sair</button>
+            <div class="card-body">
+              <strong>{{ item.course.title }}</strong>
+              <span>{{ item.module.title }}</span>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="item.progress.percentage"></div>
               </div>
-            }
-          </div>
+              <span class="percentage">{{ item.progress.percentage }}%</span>
+            </div>
+          </a>
         }
       </div>
-    </header>
+    </section>
 
-    <header class="mobile-header">
-      @if (authService.currentUser(); as user) {
-        <div>
-          <p class="hello">Olá, {{ user.name }}! 👋</p>
-          <p class="subtitle">Vamos continuar seus estudos</p>
-        </div>
-        <div class="mobile-actions">
-          <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
-            <app-icon name="bell" />
-            @if (unreadCount() > 0) {
-              <span class="badge">{{ unreadCount() }}</span>
-            }
-          </button>
-          @if (user.avatarUrl) {
-            <img class="avatar" [src]="user.avatarUrl" alt="" />
-          } @else {
-            <span class="avatar avatar-placeholder">{{ initial(user.name) }}</span>
-          }
-        </div>
+    <section class="course-section">
+      <div class="section-head">
+        <h2>Cursos recomendados para você</h2>
+        <a routerLink="/student/explorar">Ver todos</a>
+      </div>
+      @if (recommended().length === 0) {
+        <p class="hint">Novidades de cursos aparecerão aqui em breve.</p>
       }
-      @if (notifMenuOpen()) {
-        <div class="dropdown notif-dropdown mobile">
-          @if (notifications().length === 0) {
-            <p class="empty">Sem notificações por enquanto.</p>
-          }
-          @for (n of notifications(); track n.id) {
-            <button type="button" class="notif-item" [class.unread]="!n.read" (click)="markNotificationRead(n)">
-              <strong>{{ n.title }}</strong>
-              @if (n.message) {
-                <span>{{ n.message }}</span>
+      <div class="card-grid">
+        @for (item of recommended(); track item.course.id) {
+          <a class="course-card recommended" routerLink="/student/explorar">
+            <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+              @if (item.course.coverImageUrl) {
+                <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+              } @else {
+                <span>{{ initial(item.course.title) }}</span>
               }
-            </button>
-          }
-        </div>
+            </div>
+            <div class="card-body">
+              <strong>{{ item.course.title }}</strong>
+              @if (item.teacherName) {
+                <span>Prof. {{ item.teacherName }}</span>
+              }
+              @if (item.priceLabel) {
+                <span class="price">{{ item.priceLabel }}</span>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    </section>
+
+    <section class="course-section">
+      <div class="section-head">
+        <h2>Certificados disponíveis</h2>
+        <a routerLink="/student/certificates">Ver todos</a>
+      </div>
+      @if (certificates().length === 0) {
+        <p class="hint">Seus certificados aparecerão aqui assim que forem emitidos.</p>
       }
-    </header>
-
-    <main class="content">
-      <section class="hero">
-        <div class="hero-text">
-          <h1>Aprenda no seu ritmo,<br />alcance seus objetivos</h1>
-          <p>Cursos online com certificado para impulsionar sua carreira e seus conhecimentos.</p>
-          <a class="hero-cta" routerLink="/student/explorar">Explorar cursos</a>
-        </div>
-      </section>
-
-      @if (loading()) {
-        <p class="hint">Carregando seus cursos...</p>
-      } @else {
-        <section class="course-section">
-          <div class="section-head">
-            <h2>Continue aprendendo</h2>
-            <a routerLink="/student/meus-cursos">Ver todos</a>
+      @for (cert of certificates(); track cert.id) {
+        <a class="course-row" routerLink="/student/certificates">
+          <div>
+            <strong>{{ cert.moduleTitle }}</strong>
+            <span>Código {{ cert.code }}</span>
           </div>
-          @if (inProgress().length === 0) {
-            <p class="hint">Nenhum curso em andamento no momento.</p>
-          }
-          <div class="card-grid">
-            @for (item of inProgress(); track item.module.id) {
-              <a
-                class="course-card"
-                [routerLink]="['/student/course-player', item.module.id, item.progress.nextLessonId]"
-              >
-                <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
-                  @if (item.course.coverImageUrl) {
-                    <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
-                  } @else {
-                    <span>{{ initial(item.course.title) }}</span>
-                  }
-                </div>
-                <div class="card-body">
-                  <strong>{{ item.course.title }}</strong>
-                  <span>{{ item.module.title }}</span>
-                  <div class="progress-bar">
-                    <div class="progress-fill" [style.width.%]="item.progress.percentage"></div>
-                  </div>
-                  <span class="percentage">{{ item.progress.percentage }}%</span>
-                </div>
-              </a>
-            }
-          </div>
-        </section>
-
-        <section class="course-section">
-          <div class="section-head">
-            <h2>Cursos recomendados para você</h2>
-            <a routerLink="/student/explorar">Ver todos</a>
-          </div>
-          @if (recommended().length === 0) {
-            <p class="hint">Novidades de cursos aparecerão aqui em breve.</p>
-          }
-          <div class="card-grid">
-            @for (item of recommended(); track item.course.id) {
-              <a class="course-card recommended" routerLink="/student/explorar">
-                <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
-                  @if (item.course.coverImageUrl) {
-                    <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
-                  } @else {
-                    <span>{{ initial(item.course.title) }}</span>
-                  }
-                </div>
-                <div class="card-body">
-                  <strong>{{ item.course.title }}</strong>
-                  @if (item.teacherName) {
-                    <span>Prof. {{ item.teacherName }}</span>
-                  }
-                  @if (item.priceLabel) {
-                    <span class="price">{{ item.priceLabel }}</span>
-                  }
-                </div>
-              </a>
-            }
-          </div>
-        </section>
-
-        <section class="course-section">
-          <div class="section-head">
-            <h2>Certificados disponíveis</h2>
-            <a routerLink="/student/certificates">Ver todos</a>
-          </div>
-          @if (certificates().length === 0) {
-            <p class="hint">Seus certificados aparecerão aqui assim que forem emitidos.</p>
-          }
-          @for (cert of certificates(); track cert.id) {
-            <a class="course-row" routerLink="/student/certificates">
-              <div>
-                <strong>{{ cert.moduleTitle }}</strong>
-                <span>Código {{ cert.code }}</span>
-              </div>
-              <span class="percentage">Ver</span>
-            </a>
-          }
-        </section>
+          <span class="percentage">Ver</span>
+        </a>
       }
-    </main>
-  </div>
-</div>
+    </section>
+  }
+</app-dashboard-shell>
 <app-bottom-nav />

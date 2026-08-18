@@ -1,0 +1,140 @@
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      GPschool
+    </div>
+
+    <nav class="nav">
+      @for (item of navItems; track item.link) {
+        <a
+          [routerLink]="item.link"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.exact }"
+        >
+          <app-icon [name]="item.icon" />
+          {{ item.label }}
+        </a>
+      }
+    </nav>
+
+    @if (institution(); as inst) {
+      <div class="institution-card">
+        <strong>{{ inst.name }}</strong>
+        @if (inst.address) {
+          <p>{{ inst.address }}</p>
+        }
+        @if (inst.phone) {
+          <p>{{ inst.phone }}</p>
+        }
+      </div>
+    }
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      @if (searchLink) {
+        <a class="search" [routerLink]="searchLink">
+          <app-icon name="search" />
+          <span>{{ searchPlaceholder }}</span>
+        </a>
+      } @else {
+        <span></span>
+      }
+
+      <div class="topbar-actions">
+        <div class="menu-wrap">
+          <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
+            <app-icon name="bell" />
+            @if (unreadCount() > 0) {
+              <span class="badge">{{ unreadCount() }}</span>
+            }
+          </button>
+          @if (notifMenuOpen()) {
+            <div class="dropdown notif-dropdown">
+              @if (notifications().length === 0) {
+                <p class="empty">Sem notificações por enquanto.</p>
+              }
+              @for (n of notifications(); track n.id) {
+                <button type="button" class="notif-item" [class.unread]="!n.read" (click)="markNotificationRead(n)">
+                  <strong>{{ n.title }}</strong>
+                  @if (n.message) {
+                    <span>{{ n.message }}</span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        @if (authService.currentUser(); as user) {
+          <div class="menu-wrap">
+            <button type="button" class="user-btn" (click)="toggleUserMenu()">
+              @if (user.avatarUrl) {
+                <img class="avatar" [src]="user.avatarUrl" alt="" />
+              } @else {
+                <span class="avatar avatar-placeholder">{{ initial(user.name) }}</span>
+              }
+              <span class="user-info">
+                <strong>Olá, {{ user.name }}</strong>
+                <span>{{ roleLabel(user.role) }}</span>
+              </span>
+              <app-icon name="chevron-down" />
+            </button>
+            @if (userMenuOpen()) {
+              <div class="dropdown user-dropdown">
+                @if (profileLink) {
+                  <a [routerLink]="profileLink"><app-icon name="user" />Meu perfil</a>
+                }
+                <button type="button" (click)="authService.logout()"><app-icon name="log-out" />Sair</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </header>
+
+    <header class="mobile-header">
+      @if (authService.currentUser(); as user) {
+        <div>
+          <p class="hello">Olá, {{ user.name }}! 👋</p>
+          @if (mobileSubtitle) {
+            <p class="subtitle">{{ mobileSubtitle }}</p>
+          }
+        </div>
+        <div class="mobile-actions">
+          <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
+            <app-icon name="bell" />
+            @if (unreadCount() > 0) {
+              <span class="badge">{{ unreadCount() }}</span>
+            }
+          </button>
+          @if (user.avatarUrl) {
+            <img class="avatar" [src]="user.avatarUrl" alt="" />
+          } @else {
+            <span class="avatar avatar-placeholder">{{ initial(user.name) }}</span>
+          }
+        </div>
+      }
+      @if (notifMenuOpen()) {
+        <div class="dropdown notif-dropdown mobile">
+          @if (notifications().length === 0) {
+            <p class="empty">Sem notificações por enquanto.</p>
+          }
+          @for (n of notifications(); track n.id) {
+            <button type="button" class="notif-item" [class.unread]="!n.read" (click)="markNotificationRead(n)">
+              <strong>{{ n.title }}</strong>
+              @if (n.message) {
+                <span>{{ n.message }}</span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </header>
+
+    <main class="content">
+      <ng-content></ng-content>
+    </main>
+  </div>
+</div>

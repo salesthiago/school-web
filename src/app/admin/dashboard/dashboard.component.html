@@ -1,16 +1,42 @@
-<div class="panel">
-  <h1>Área do administrador</h1>
-  <p class="hello">Olá, {{ authService.currentUser()?.name }}</p>
+<app-dashboard-shell [navItems]="navItems">
+  <h1 class="page-title">Área do administrador</h1>
 
-  <nav class="menu">
-    <a routerLink="/admin/users">Usuários</a>
-    <a routerLink="/admin/courses">Cursos</a>
-    <a routerLink="/admin/teachers">Professores</a>
-    <a routerLink="/admin/payments">Pagamentos</a>
-    <a routerLink="/admin/reports">Relatórios</a>
-    <a routerLink="/admin/settings">Identidade visual</a>
-    <a routerLink="/admin/video-settings">Integração de vídeos (Bunny.net)</a>
-  </nav>
+  @if (stats(); as s) {
+    <div class="stat-grid">
+      <div class="stat-tile">
+        <span class="stat-label">Cadastros na plataforma</span>
+        <strong class="stat-value">{{ s.totalUsers }}</strong>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Alunos</span>
+        <strong class="stat-value">{{ s.totalStudents }}</strong>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Professores</span>
+        <strong class="stat-value">{{ s.totalTeachers }}</strong>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Cursos</span>
+        <strong class="stat-value">{{ s.totalCourses }}</strong>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Matrículas ativas</span>
+        <strong class="stat-value">{{ s.totalEnrollments }}</strong>
+      </div>
+    </div>
 
-  <button class="logout-btn" (click)="logout()">Sair</button>
-</div>
+    <div class="chart-grid">
+      <section class="chart-card">
+        <h2>Matrículas nos últimos 14 dias</h2>
+        <app-bar-chart [series]="s.enrollmentsByDay" color="#6c4bf4" />
+      </section>
+
+      <section class="chart-card">
+        <h2>Novos cadastros nos últimos 14 dias</h2>
+        <app-bar-chart [series]="s.newUsersByDay" color="#26a69a" />
+      </section>
+    </div>
+  } @else if (loading()) {
+    <p class="hint">Carregando estatísticas...</p>
+  }
+</app-dashboard-shell>

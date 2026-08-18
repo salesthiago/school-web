@@ -90,7 +90,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/dashboard/dashboard.component').then((m) => m.AdminDashboardComponent),
       },
-      { path: 'users', component: ComingSoonComponent, data: { title: 'Usuários' } },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./admin/users/users.component').then((m) => m.AdminUsersComponent),
+      },
       { path: 'courses', component: ComingSoonComponent, data: { title: 'Cursos' } },
       { path: 'teachers', component: ComingSoonComponent, data: { title: 'Professores' } },
       { path: 'payments', component: ComingSoonComponent, data: { title: 'Pagamentos' } },

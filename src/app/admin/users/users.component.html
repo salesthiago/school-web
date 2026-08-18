@@ -1,0 +1,123 @@
+<app-dashboard-shell [navItems]="navItems">
+  <div class="page-head">
+    <h1 class="page-title">Usuários</h1>
+    <button type="button" class="primary-btn" (click)="openCreate()">+ Novo usuário</button>
+  </div>
+
+  <div class="filters">
+    <input
+      type="text"
+      placeholder="Buscar por nome ou e-mail..."
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    />
+    <select [value]="roleFilter()" (change)="roleFilter.set($any($event.target).value)">
+      <option value="">Todos os perfis</option>
+      @for (opt of roleOptions; track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  </div>
+
+  @if (formOpen()) {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="user-form">
+      <h2>{{ editingUser() ? 'Editar usuário' : 'Novo usuário' }}</h2>
+
+      <div class="form-grid">
+        <label>
+          Nome
+          <input type="text" formControlName="name" placeholder="Nome completo" />
+        </label>
+
+        <label>
+          E-mail
+          <input type="email" formControlName="email" placeholder="email@exemplo.com" />
+        </label>
+
+        <label>
+          Telefone
+          <input type="tel" formControlName="phone" placeholder="(00) 00000-0000" />
+        </label>
+
+        <label>
+          Perfil
+          <select formControlName="role">
+            @for (opt of roleOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+
+        @if (!editingUser()) {
+          <label>
+            Senha inicial
+            <input type="password" formControlName="password" placeholder="Mínimo 8 caracteres" />
+          </label>
+        }
+
+        @if (editingUser()) {
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="active" />
+            Usuário ativo
+          </label>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="primary-btn" [disabled]="form.invalid || saving()">
+          {{ saving() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <p class="hint">Carregando usuários...</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Perfil</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of filteredUsers(); track user.id) {
+            <tr>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="role-badge" [class]="'role-' + user.role">{{ roleLabels[user.role] }}</span>
+              </td>
+              <td>
+                <span class="status-badge" [class.inactive]="user.active === false">
+                  {{ user.active === false ? 'Inativo' : 'Ativo' }}
+                </span>
+              </td>
+              <td class="actions">
+                <button type="button" class="link-btn" (click)="openEdit(user)">Editar</button>
+                @if (!isSelf(user)) {
+                  <button type="button" class="link-btn danger" (click)="remove(user)">Excluir</button>
+                }
+              </td>
+            </tr>
+          }
+          @if (filteredUsers().length === 0) {
+            <tr>
+              <td colspan="5" class="hint">Nenhum usuário encontrado.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</app-dashboard-shell>
