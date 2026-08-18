@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthTokens, Role, User } from '../models/user.model';
+import { UsersService } from './users.service';
 
 interface JwtPayload {
   sub: string;
@@ -19,7 +20,22 @@ const REFRESH_TOKEN_KEY = 'gpschool.refreshToken';
 export class AuthService {
   currentUser = signal<User | null>(this.decodeUser());
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private usersService: UsersService,
+  ) {
+    if (this.currentUser()) {
+      this.refreshProfile();
+    }
+  }
+
+  /** Busca o perfil completo (nome, avatar, redes sociais) — o JWT só carrega id/e-mail/role. */
+  refreshProfile() {
+    this.usersService.me().subscribe({
+      next: (profile) => this.currentUser.set(profile),
+      error: () => {},
+    });
+  }
 
   register(payload: { name: string; email: string; phone?: string; password: string }) {
     return this.http
@@ -62,6 +78,7 @@ export class AuthService {
     localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
     this.currentUser.set(this.decodeUser());
+    this.refreshProfile();
   }
 
   private decodeUser(): User | null {

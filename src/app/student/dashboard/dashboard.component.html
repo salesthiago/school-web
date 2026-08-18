@@ -1,78 +1,228 @@
-<div class="dashboard">
-  <header class="greeting">
-    <p class="hello">Olá, {{ authService.currentUser()?.name }} 👋</p>
-    <h1>Vamos estudar hoje?</h1>
-  </header>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      GPschool
+    </div>
 
-  @if (loading()) {
-    <p class="hint">Carregando seus cursos...</p>
-  } @else {
-    @if (currentCourse; as current) {
-      <section class="current-course-card">
-        <p class="label">Continuando</p>
-        <h2>{{ current.course.title }} — {{ current.module.title }}</h2>
-
-        <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="current.progress.percentage"></div>
-        </div>
-        <p class="progress-label">{{ current.progress.percentage }}% concluído</p>
-
+    <nav class="nav">
+      @for (item of navItems; track item.link) {
         <a
-          class="cta"
-          [routerLink]="['/student/course-player', current.module.id, current.progress.nextLessonId]"
+          [routerLink]="item.link"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.exact }"
         >
-          Continuar estudando
+          <app-icon [name]="item.icon" />
+          {{ item.label }}
         </a>
-      </section>
+      }
+    </nav>
+
+    @if (institution(); as inst) {
+      <div class="institution-card">
+        <strong>{{ inst.name }}</strong>
+        @if (inst.address) {
+          <p>{{ inst.address }}</p>
+        }
+        @if (inst.phone) {
+          <p>{{ inst.phone }}</p>
+        }
+      </div>
     }
+  </aside>
 
-    <section class="course-list">
-      <h3>Cursos em andamento</h3>
-      @if (inProgress().length === 0) {
-        <p class="hint">Nenhum curso em andamento no momento.</p>
-      }
-      @for (item of inProgress(); track item.module.id) {
-        <a class="course-row" [routerLink]="['/student/course-player', item.module.id, item.progress.nextLessonId]">
-          <div>
-            <strong>{{ item.course.title }}</strong>
-            <span>{{ item.module.title }}</span>
-          </div>
-          <span class="percentage">{{ item.progress.percentage }}%</span>
-        </a>
-      }
-    </section>
+  <div class="main">
+    <header class="topbar">
+      <a class="search" routerLink="/student/explorar">
+        <app-icon name="search" />
+        <span>Buscar cursos, módulos, aulas...</span>
+      </a>
 
-    <section class="course-list">
-      <h3>Cursos concluídos</h3>
-      @if (completed().length === 0) {
-        <p class="hint">Você ainda não concluiu nenhum módulo.</p>
-      }
-      @for (item of completed(); track item.module.id) {
-        <div class="course-row done">
-          <div>
-            <strong>{{ item.course.title }}</strong>
-            <span>{{ item.module.title }}</span>
+      <div class="topbar-actions">
+        <div class="menu-wrap">
+          <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
+            <app-icon name="bell" />
+            @if (unreadCount() > 0) {
+              <span class="badge">{{ unreadCount() }}</span>
+            }
+          </button>
+          @if (notifMenuOpen()) {
+            <div class="dropdown notif-dropdown">
+              @if (notifications().length === 0) {
+                <p class="empty">Sem notificações por enquanto.</p>
+              }
+              @for (n of notifications(); track n.id) {
+                <button type="button" class="notif-item" [class.unread]="!n.read" (click)="markNotificationRead(n)">
+                  <strong>{{ n.title }}</strong>
+                  @if (n.message) {
+                    <span>{{ n.message }}</span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        @if (authService.currentUser(); as user) {
+          <div class="menu-wrap">
+            <button type="button" class="user-btn" (click)="toggleUserMenu()">
+              @if (user.avatarUrl) {
+                <img class="avatar" [src]="user.avatarUrl" alt="" />
+              } @else {
+                <span class="avatar avatar-placeholder">{{ initial(user.name) }}</span>
+              }
+              <span class="user-info">
+                <strong>Olá, {{ user.name }}</strong>
+                <span>{{ roleLabel(user.role) }}</span>
+              </span>
+              <app-icon name="chevron-down" />
+            </button>
+            @if (userMenuOpen()) {
+              <div class="dropdown user-dropdown">
+                <a routerLink="/student/profile"><app-icon name="user" />Meu perfil</a>
+                <button type="button" (click)="authService.logout()"><app-icon name="log-out" />Sair</button>
+              </div>
+            }
           </div>
-          <span class="badge">Concluído</span>
+        }
+      </div>
+    </header>
+
+    <header class="mobile-header">
+      @if (authService.currentUser(); as user) {
+        <div>
+          <p class="hello">Olá, {{ user.name }}! 👋</p>
+          <p class="subtitle">Vamos continuar seus estudos</p>
+        </div>
+        <div class="mobile-actions">
+          <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
+            <app-icon name="bell" />
+            @if (unreadCount() > 0) {
+              <span class="badge">{{ unreadCount() }}</span>
+            }
+          </button>
+          @if (user.avatarUrl) {
+            <img class="avatar" [src]="user.avatarUrl" alt="" />
+          } @else {
+            <span class="avatar avatar-placeholder">{{ initial(user.name) }}</span>
+          }
         </div>
       }
-    </section>
+      @if (notifMenuOpen()) {
+        <div class="dropdown notif-dropdown mobile">
+          @if (notifications().length === 0) {
+            <p class="empty">Sem notificações por enquanto.</p>
+          }
+          @for (n of notifications(); track n.id) {
+            <button type="button" class="notif-item" [class.unread]="!n.read" (click)="markNotificationRead(n)">
+              <strong>{{ n.title }}</strong>
+              @if (n.message) {
+                <span>{{ n.message }}</span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </header>
 
-    <section class="course-list">
-      <h3>Certificados disponíveis</h3>
-      @if (certificates().length === 0) {
-        <p class="hint">Seus certificados aparecerão aqui assim que forem emitidos.</p>
-      }
-      @for (cert of certificates(); track cert.id) {
-        <a class="course-row" [routerLink]="['/student/certificates']">
-          <div>
-            <strong>{{ cert.moduleTitle }}</strong>
-            <span>Código {{ cert.code }}</span>
+    <main class="content">
+      <section class="hero">
+        <div class="hero-text">
+          <h1>Aprenda no seu ritmo,<br />alcance seus objetivos</h1>
+          <p>Cursos online com certificado para impulsionar sua carreira e seus conhecimentos.</p>
+          <a class="hero-cta" routerLink="/student/explorar">Explorar cursos</a>
+        </div>
+      </section>
+
+      @if (loading()) {
+        <p class="hint">Carregando seus cursos...</p>
+      } @else {
+        <section class="course-section">
+          <div class="section-head">
+            <h2>Continue aprendendo</h2>
+            <a routerLink="/student/meus-cursos">Ver todos</a>
           </div>
-          <span class="percentage">Ver</span>
-        </a>
+          @if (inProgress().length === 0) {
+            <p class="hint">Nenhum curso em andamento no momento.</p>
+          }
+          <div class="card-grid">
+            @for (item of inProgress(); track item.module.id) {
+              <a
+                class="course-card"
+                [routerLink]="['/student/course-player', item.module.id, item.progress.nextLessonId]"
+              >
+                <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+                  @if (item.course.coverImageUrl) {
+                    <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+                  } @else {
+                    <span>{{ initial(item.course.title) }}</span>
+                  }
+                </div>
+                <div class="card-body">
+                  <strong>{{ item.course.title }}</strong>
+                  <span>{{ item.module.title }}</span>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="item.progress.percentage"></div>
+                  </div>
+                  <span class="percentage">{{ item.progress.percentage }}%</span>
+                </div>
+              </a>
+            }
+          </div>
+        </section>
+
+        <section class="course-section">
+          <div class="section-head">
+            <h2>Cursos recomendados para você</h2>
+            <a routerLink="/student/explorar">Ver todos</a>
+          </div>
+          @if (recommended().length === 0) {
+            <p class="hint">Novidades de cursos aparecerão aqui em breve.</p>
+          }
+          <div class="card-grid">
+            @for (item of recommended(); track item.course.id) {
+              <a class="course-card recommended" routerLink="/student/explorar">
+                <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+                  @if (item.course.coverImageUrl) {
+                    <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+                  } @else {
+                    <span>{{ initial(item.course.title) }}</span>
+                  }
+                </div>
+                <div class="card-body">
+                  <strong>{{ item.course.title }}</strong>
+                  @if (item.teacherName) {
+                    <span>Prof. {{ item.teacherName }}</span>
+                  }
+                  @if (item.priceLabel) {
+                    <span class="price">{{ item.priceLabel }}</span>
+                  }
+                </div>
+              </a>
+            }
+          </div>
+        </section>
+
+        <section class="course-section">
+          <div class="section-head">
+            <h2>Certificados disponíveis</h2>
+            <a routerLink="/student/certificates">Ver todos</a>
+          </div>
+          @if (certificates().length === 0) {
+            <p class="hint">Seus certificados aparecerão aqui assim que forem emitidos.</p>
+          }
+          @for (cert of certificates(); track cert.id) {
+            <a class="course-row" routerLink="/student/certificates">
+              <div>
+                <strong>{{ cert.moduleTitle }}</strong>
+                <span>Código {{ cert.code }}</span>
+              </div>
+              <span class="percentage">Ver</span>
+            </a>
+          }
+        </section>
       }
-    </section>
-  }
+    </main>
+  </div>
 </div>
 <app-bottom-nav />

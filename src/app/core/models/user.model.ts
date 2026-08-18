@@ -1,5 +1,10 @@
 export type Role = 'student' | 'teacher' | 'admin';
 
+export interface SocialLinks {
+  instagram?: string;
+  twitter?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -7,6 +12,8 @@ export interface User {
   phone?: string;
   role: Role;
   institutionId?: string;
+  avatarUrl?: string;
+  socialLinks?: SocialLinks;
 }
 
 export interface AuthTokens {

@@ -3,11 +3,53 @@
   <h1>Meu perfil</h1>
 
   @if (authService.currentUser(); as user) {
-    <div class="info-card">
-      <p><strong>Nome:</strong> {{ user.name }}</p>
-      <p><strong>E-mail:</strong> {{ user.email }}</p>
-      <p><strong>Perfil:</strong> {{ user.role }}</p>
+    <div class="avatar-card">
+      <div class="avatar-wrap">
+        @if (user.avatarUrl) {
+          <img class="avatar" [src]="user.avatarUrl" alt="Foto de perfil" />
+        } @else {
+          <div class="avatar avatar-placeholder">{{ user.name.charAt(0) }}</div>
+        }
+        <label class="avatar-upload-btn" [class.disabled]="uploadingAvatar()">
+          {{ uploadingAvatar() ? 'Enviando...' : 'Alterar foto' }}
+          <input type="file" accept="image/*" hidden [disabled]="uploadingAvatar()" (change)="onAvatarSelected($event)" />
+        </label>
+      </div>
+      <p class="email">{{ user.email }}</p>
     </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="info-card">
+      <label>
+        Nome
+        <input type="text" formControlName="name" placeholder="Seu nome" />
+      </label>
+
+      <label>
+        Telefone
+        <input type="tel" formControlName="phone" placeholder="(00) 00000-0000" />
+      </label>
+
+      <label>
+        Instagram
+        <input type="text" formControlName="instagram" placeholder="@seuusuario" />
+      </label>
+
+      <label>
+        X (Twitter)
+        <input type="text" formControlName="twitter" placeholder="@seuusuario" />
+      </label>
+
+      @if (successMessage()) {
+        <p class="success">{{ successMessage() }}</p>
+      }
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="form.invalid || saving()">
+        {{ saving() ? 'Salvando...' : 'Salvar alterações' }}
+      </button>
+    </form>
   }
 
   <button class="logout-btn" (click)="logout()">Sair</button>

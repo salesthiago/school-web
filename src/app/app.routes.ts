@@ -49,6 +49,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./student/profile/profile.component').then((m) => m.ProfileComponent),
       },
+      { path: 'meus-cursos', component: ComingSoonComponent, data: { title: 'Meus cursos' } },
+      { path: 'explorar', component: ComingSoonComponent, data: { title: 'Explorar cursos' } },
+      { path: 'wishlist', component: ComingSoonComponent, data: { title: 'Wishlist' } },
+      { path: 'historico', component: ComingSoonComponent, data: { title: 'Histórico' } },
+      {
+        path: 'configuracoes',
+        component: ComingSoonComponent,
+        data: { title: 'Configurações' },
+      },
+      { path: 'ajuda', component: ComingSoonComponent, data: { title: 'Ajuda' } },
     ],
   },
 
