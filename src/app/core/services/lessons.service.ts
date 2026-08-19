@@ -53,6 +53,10 @@ export class LessonsService {
     return this.http.post<Lesson>(`${environment.apiUrl}/lessons/${id}/video/complete`, payload);
   }
 
+  removeVideo(id: string) {
+    return this.http.delete<Lesson>(`${environment.apiUrl}/lessons/${id}/video`);
+  }
+
   /**
    * O arquivo vai direto do navegador para o Bunny.net (protocolo TUS,
    * resumível) — nunca passa pelo nosso backend, evitando o limite de

@@ -255,6 +255,19 @@ export class ModuleDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  removeVideo(lesson: Lesson) {
+    const confirmed = window.confirm(`Remover o vídeo da aula "${lesson.title}"? Você poderá enviar outro em seguida.`);
+    if (!confirmed) return;
+    this.lessonsService.removeVideo(lesson.id).subscribe({
+      next: (updated) => {
+        this.pollingSubs.get(lesson.id)?.unsubscribe();
+        this.pollingSubs.delete(lesson.id);
+        this.lessons.update((list) => list.map((l) => (l.id === lesson.id ? updated : l)));
+      },
+      error: (err) => window.alert(err?.error?.message ?? 'Não foi possível remover o vídeo.'),
+    });
+  }
+
   toggleAttachments(lesson: Lesson) {
     if (this.expandedLessonId() === lesson.id) {
       this.expandedLessonId.set(null);
