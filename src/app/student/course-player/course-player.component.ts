@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { switchMap } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
@@ -23,7 +24,13 @@ export class CoursePlayerComponent implements OnInit {
     private route: ActivatedRoute,
     private coursesService: CoursesService,
     private enrollmentsService: EnrollmentsService,
+    private sanitizer: DomSanitizer,
   ) {}
+
+  /** playbackUrl vem do nosso backend (iframe.mediadelivery.net do Bunny), não de entrada do usuário. */
+  embedUrl(playbackUrl: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(playbackUrl);
+  }
 
   ngOnInit() {
     this.route.paramMap
@@ -63,7 +70,7 @@ export class CoursePlayerComponent implements OnInit {
     if (!lesson || !module) return;
 
     this.enrollmentsService
-      .recordProgress(lesson.id, module.id, lesson.video.durationSeconds)
+      .recordProgress(lesson.id, module.id, lesson.video?.durationSeconds ?? 0)
       .subscribe(() => this.refreshProgress(module.id));
   }
 }

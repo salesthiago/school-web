@@ -73,9 +73,21 @@ export const routes: Routes = [
             (m) => m.TeacherDashboardComponent,
           ),
       },
-      { path: 'courses', component: ComingSoonComponent, data: { title: 'Meus cursos' } },
-      { path: 'modules', component: ComingSoonComponent, data: { title: 'Módulos' } },
-      { path: 'lessons', component: ComingSoonComponent, data: { title: 'Aulas' } },
+      {
+        path: 'courses',
+        loadComponent: () =>
+          import('./shared/pages/courses-list.component').then((m) => m.CoursesListComponent),
+      },
+      {
+        path: 'courses/:id',
+        loadComponent: () =>
+          import('./shared/pages/course-detail.component').then((m) => m.CourseDetailComponent),
+      },
+      {
+        path: 'courses/:courseId/modules/:moduleId',
+        loadComponent: () =>
+          import('./shared/pages/module-detail.component').then((m) => m.ModuleDetailComponent),
+      },
       { path: 'exams', component: ComingSoonComponent, data: { title: 'Avaliações' } },
       {
         path: 'students',
@@ -113,7 +125,21 @@ export const routes: Routes = [
           import('./shared/pages/role-users.component').then((m) => m.RoleUsersComponent),
         data: { role: 'admin', title: 'Administradores' },
       },
-      { path: 'courses', component: ComingSoonComponent, data: { title: 'Cursos' } },
+      {
+        path: 'courses',
+        loadComponent: () =>
+          import('./shared/pages/courses-list.component').then((m) => m.CoursesListComponent),
+      },
+      {
+        path: 'courses/:id',
+        loadComponent: () =>
+          import('./shared/pages/course-detail.component').then((m) => m.CourseDetailComponent),
+      },
+      {
+        path: 'courses/:courseId/modules/:moduleId',
+        loadComponent: () =>
+          import('./shared/pages/module-detail.component').then((m) => m.ModuleDetailComponent),
+      },
       { path: 'payments', component: ComingSoonComponent, data: { title: 'Pagamentos' } },
       { path: 'reports', component: ComingSoonComponent, data: { title: 'Relatórios' } },
       { path: 'settings', component: ComingSoonComponent, data: { title: 'Identidade visual' } },

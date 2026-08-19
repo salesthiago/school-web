@@ -15,8 +15,6 @@ export const STUDENT_NAV_ITEMS: ShellNavItem[] = [
 export const TEACHER_NAV_ITEMS: ShellNavItem[] = [
   { label: 'Dashboard', link: '/teacher', exact: true, icon: 'home' },
   { label: 'Meus cursos', link: '/teacher/courses', exact: false, icon: 'menu_book' },
-  { label: 'Módulos', link: '/teacher/modules', exact: false, icon: 'layers' },
-  { label: 'Aulas', link: '/teacher/lessons', exact: false, icon: 'videocam' },
   { label: 'Avaliações', link: '/teacher/exams', exact: false, icon: 'assignment' },
   { label: 'Alunos matriculados', link: '/teacher/students', exact: false, icon: 'group' },
 ];

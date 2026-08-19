@@ -1,0 +1,154 @@
+<app-dashboard-shell [navItems]="navItems">
+  <a class="back-link" [routerLink]="basePath">← Voltar para cursos</a>
+
+  @if (course(); as c) {
+    <div class="page-head">
+      <h1 class="page-title">{{ c.title }}</h1>
+      <app-icon-button icon="delete_outline" label="Excluir curso" [showLabel]="true" variant="danger" (pressed)="deleteCourse()" />
+    </div>
+
+    <section class="entity-form">
+      <h2>Dados do curso</h2>
+
+      <div class="cover-row">
+        <div class="cover-preview">
+          @if (c.coverImageUrl) {
+            <img [src]="c.coverImageUrl" alt="Capa do curso" />
+          } @else {
+            <span>Sem capa</span>
+          }
+        </div>
+        <label class="upload-btn" [class.disabled]="uploadingCover()">
+          {{ uploadingCover() ? 'Enviando...' : 'Alterar capa' }}
+          <input type="file" accept="image/*" hidden [disabled]="uploadingCover()" (change)="onCoverSelected($event)" />
+        </label>
+      </div>
+
+      <form [formGroup]="courseForm" (ngSubmit)="submitCourse()">
+        <div class="form-grid">
+          <label>
+            Título
+            <input type="text" formControlName="title" />
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="published" />
+            Curso publicado
+          </label>
+        </div>
+
+        <label>
+          Descrição
+          <quill-editor formControlName="description" format="html" theme="snow" />
+        </label>
+
+        @if (courseError()) {
+          <p class="error">{{ courseError() }}</p>
+        }
+        @if (courseSaved()) {
+          <p class="success">Curso salvo.</p>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="primary-btn" [disabled]="courseForm.invalid || savingCourse()">
+            {{ savingCourse() ? 'Salvando...' : 'Salvar curso' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <div class="page-head">
+      <h2 class="page-title">Módulos</h2>
+      <app-icon-button icon="add" label="Novo módulo" [showLabel]="true" variant="primary" (pressed)="openModuleCreate()" />
+    </div>
+
+    @if (moduleFormOpen()) {
+      <form [formGroup]="moduleForm" (ngSubmit)="submitModule()" class="entity-form">
+        <h2>{{ editingModule() ? 'Editar módulo' : 'Novo módulo' }}</h2>
+
+        <div class="form-grid">
+          <label>
+            Título
+            <input type="text" formControlName="title" placeholder="Nome do módulo" />
+          </label>
+
+          <label>
+            Carga horária (h)
+            <input type="number" min="0" formControlName="workloadHours" />
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="free" />
+            Módulo gratuito
+          </label>
+
+          @if (!moduleForm.controls.free.value) {
+            <label>
+              Preço (R$)
+              <input type="number" min="0" step="0.01" formControlName="price" />
+            </label>
+          }
+
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="published" />
+            Módulo publicado
+          </label>
+        </div>
+
+        <label>
+          Descrição
+          <quill-editor formControlName="description" format="html" theme="snow" />
+        </label>
+
+        @if (moduleError()) {
+          <p class="error">{{ moduleError() }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" (click)="closeModuleForm()">Cancelar</button>
+          <button type="submit" class="primary-btn" [disabled]="moduleForm.invalid || savingModule()">
+            {{ savingModule() ? 'Salvando...' : 'Salvar módulo' }}
+          </button>
+        </div>
+      </form>
+    }
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Preço</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (module of modules(); track module.id) {
+            <tr>
+              <td>{{ module.title }}</td>
+              <td>{{ priceLabel(module) }}</td>
+              <td>
+                <span class="status-badge" [class.draft]="!module.published">
+                  {{ module.published ? 'Publicado' : 'Rascunho' }}
+                </span>
+              </td>
+              <td class="actions">
+                <app-icon-button icon="menu_book" label="Aulas" (pressed)="openModule(module)" />
+                <app-icon-button icon="edit" label="Editar" (pressed)="openModuleEdit(module)" />
+                <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="removeModule(module)" />
+              </td>
+            </tr>
+          }
+          @if (modules().length === 0) {
+            <tr>
+              <td colspan="4" class="hint">Nenhum módulo cadastrado ainda.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (loading()) {
+    <p class="hint">Carregando curso...</p>
+  }
+</app-dashboard-shell>

@@ -32,7 +32,7 @@
   </div>
 
   @if (!readOnly && formOpen()) {
-    <form [formGroup]="form" (ngSubmit)="submit()" class="user-form">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="entity-form">
       <h2>{{ editingUser() ? 'Editar ' + roleLabel.toLowerCase() : 'Novo ' + roleLabel }}</h2>
 
       <div class="form-grid">
@@ -80,7 +80,7 @@
   }
 
   @if (!readOnly && passwordUser(); as pu) {
-    <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="user-form">
+    <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="entity-form">
       <h2>Alterar senha — {{ pu.name }}</h2>
 
       <div class="form-grid">

@@ -15,7 +15,7 @@ export interface Course {
   title: string;
   description?: string;
   coverImageUrl?: string;
-  teacherId: string;
+  teacherId: string | { id: string; name: string };
   published: boolean;
 }
 
@@ -23,6 +23,7 @@ export interface CourseModule {
   id: string;
   title: string;
   description?: string;
+  coverImageUrl?: string;
   courseId: string;
   order: number;
   price: number;
@@ -45,10 +46,18 @@ export interface Lesson {
   title: string;
   description?: string;
   moduleId: string;
-  video: VideoMeta;
+  video?: VideoMeta;
   order: number;
   mandatory: boolean;
   published: boolean;
+}
+
+export interface Attachment {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
 }
 
 export interface Enrollment {

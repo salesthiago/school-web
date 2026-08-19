@@ -1,0 +1,191 @@
+<app-dashboard-shell [navItems]="navItems">
+  <a class="back-link" [routerLink]="[basePath, courseId]">← Voltar para o curso</a>
+
+  @if (module(); as m) {
+    <h1 class="page-title">{{ m.title }}</h1>
+
+    <section class="entity-form">
+      <h2>Dados do módulo</h2>
+
+      <div class="cover-row">
+        <div class="cover-preview">
+          @if (m.coverImageUrl) {
+            <img [src]="m.coverImageUrl" alt="Capa do módulo" />
+          } @else {
+            <span>Sem capa</span>
+          }
+        </div>
+        <label class="upload-btn" [class.disabled]="uploadingCover()">
+          {{ uploadingCover() ? 'Enviando...' : 'Alterar capa' }}
+          <input type="file" accept="image/*" hidden [disabled]="uploadingCover()" (change)="onCoverSelected($event)" />
+        </label>
+      </div>
+
+      <form [formGroup]="moduleForm" (ngSubmit)="submitModule()">
+        <div class="form-grid">
+          <label>
+            Título
+            <input type="text" formControlName="title" />
+          </label>
+
+          <label>
+            Carga horária (h)
+            <input type="number" min="0" formControlName="workloadHours" />
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="free" />
+            Módulo gratuito
+          </label>
+
+          @if (!moduleForm.controls.free.value) {
+            <label>
+              Preço (R$)
+              <input type="number" min="0" step="0.01" formControlName="price" />
+            </label>
+          }
+
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="published" />
+            Módulo publicado
+          </label>
+        </div>
+
+        <label>
+          Descrição
+          <quill-editor formControlName="description" format="html" theme="snow" />
+        </label>
+
+        @if (moduleError()) {
+          <p class="error">{{ moduleError() }}</p>
+        }
+        @if (moduleSaved()) {
+          <p class="success">Módulo salvo.</p>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="primary-btn" [disabled]="moduleForm.invalid || savingModule()">
+            {{ savingModule() ? 'Salvando...' : 'Salvar módulo' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <div class="page-head">
+      <h2 class="page-title">Aulas</h2>
+      <app-icon-button icon="add" label="Nova aula" [showLabel]="true" variant="primary" (pressed)="openLessonCreate()" />
+    </div>
+
+    @if (lessonFormOpen()) {
+      <form [formGroup]="lessonForm" (ngSubmit)="submitLesson()" class="entity-form">
+        <h2>{{ editingLesson() ? 'Editar aula' : 'Nova aula' }}</h2>
+
+        <div class="form-grid">
+          <label>
+            Título
+            <input type="text" formControlName="title" placeholder="Nome da aula" />
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="mandatory" />
+            Obrigatória
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="published" />
+            Publicada
+          </label>
+        </div>
+
+        <label>
+          Descrição
+          <quill-editor formControlName="description" format="html" theme="snow" />
+        </label>
+
+        @if (lessonError()) {
+          <p class="error">{{ lessonError() }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" (click)="closeLessonForm()">Cancelar</button>
+          <button type="submit" class="primary-btn" [disabled]="lessonForm.invalid || savingLesson()">
+            {{ savingLesson() ? 'Salvando...' : 'Salvar aula' }}
+          </button>
+        </div>
+
+        @if (editingLesson(); as le) {
+          <p class="hint">
+            O vídeo é enviado depois de salvar, na lista de aulas abaixo.
+          </p>
+        }
+      </form>
+    }
+
+    <div class="lesson-list">
+      @for (lesson of lessons(); track lesson.id) {
+        <div class="lesson-card">
+          <div class="lesson-row">
+            <div class="lesson-info">
+              <strong>{{ lesson.title }}</strong>
+              <span class="status-badge" [class.draft]="!lesson.published">
+                {{ lesson.published ? 'Publicada' : 'Rascunho' }}
+              </span>
+              @if (!lesson.mandatory) {
+                <span class="status-badge inactive">Opcional</span>
+              }
+              @if (lesson.video?.playbackUrl) {
+                <span class="status-badge">Vídeo enviado</span>
+              } @else {
+                <span class="status-badge inactive">Sem vídeo</span>
+              }
+            </div>
+            <div class="lesson-actions">
+              <label class="upload-btn small" [class.disabled]="uploadingVideoFor() === lesson.id">
+                {{ uploadingVideoFor() === lesson.id ? 'Enviando...' : 'Enviar vídeo' }}
+                <input
+                  type="file"
+                  accept="video/*"
+                  hidden
+                  [disabled]="uploadingVideoFor() === lesson.id"
+                  (change)="onVideoSelected(lesson, $event)"
+                />
+              </label>
+              <app-icon-button icon="attach_file" label="Anexos" (pressed)="toggleAttachments(lesson)" />
+              <app-icon-button icon="edit" label="Editar" (pressed)="openLessonEdit(lesson)" />
+              <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="removeLesson(lesson)" />
+            </div>
+          </div>
+
+          @if (expandedLessonId() === lesson.id) {
+            <div class="attachments-panel">
+              @for (attachment of attachmentsFor(lesson.id); track attachment.id) {
+                <div class="attachment-row">
+                  <a [href]="attachment.url" target="_blank" rel="noopener">{{ attachment.fileName }}</a>
+                  <app-icon-button icon="delete_outline" label="Excluir anexo" variant="danger" (pressed)="removeAttachment(lesson, attachment)" />
+                </div>
+              }
+              @if (attachmentsFor(lesson.id).length === 0) {
+                <p class="hint">Nenhum anexo nesta aula.</p>
+              }
+              <label class="upload-btn small" [class.disabled]="uploadingAttachmentFor() === lesson.id">
+                {{ uploadingAttachmentFor() === lesson.id ? 'Enviando...' : '+ Adicionar PDF' }}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  hidden
+                  [disabled]="uploadingAttachmentFor() === lesson.id"
+                  (change)="onAttachmentSelected(lesson, $event)"
+                />
+              </label>
+            </div>
+          }
+        </div>
+      }
+      @if (lessons().length === 0) {
+        <p class="hint">Nenhuma aula cadastrada ainda.</p>
+      }
+    </div>
+  } @else if (loading()) {
+    <p class="hint">Carregando módulo...</p>
+  }
+</app-dashboard-shell>

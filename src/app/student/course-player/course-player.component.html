@@ -1,8 +1,11 @@
 <div class="player-screen">
   @if (currentLesson(); as lesson) {
     <div class="video-wrap">
-      <!-- TODO: para provedores HLS (m3u8), integrar hls.js. Streaming/CDN externo por design. -->
-      <video [src]="lesson.video.playbackUrl" controls (ended)="markWatched()"></video>
+      @if (lesson.video?.playbackUrl; as playbackUrl) {
+        <iframe [src]="embedUrl(playbackUrl)" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+      } @else {
+        <div class="no-video">Vídeo ainda não disponível para esta aula.</div>
+      }
     </div>
 
     <div class="lesson-info">

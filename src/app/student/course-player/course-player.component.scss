@@ -8,9 +8,22 @@
   background: #000;
   aspect-ratio: 16 / 9;
 
-  video {
+  iframe {
     width: 100%;
     height: 100%;
+    border: none;
+  }
+
+  .no-video {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aab;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 1rem;
   }
 }
 

@@ -1,0 +1,67 @@
+<app-dashboard-shell [navItems]="navItems">
+  <div class="page-head">
+    <h1 class="page-title">Cursos</h1>
+    <app-icon-button icon="add" label="Novo curso" [showLabel]="true" variant="primary" (pressed)="openCreate()" />
+  </div>
+
+  @if (formOpen()) {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="entity-form">
+      <h2>Novo curso</h2>
+
+      <label>
+        Título
+        <input type="text" formControlName="title" placeholder="Nome do curso" />
+      </label>
+
+      <label>
+        Descrição
+        <quill-editor formControlName="description" format="html" theme="snow" placeholder="Descreva o curso..." />
+      </label>
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="primary-btn" [disabled]="form.invalid || saving()">
+          {{ saving() ? 'Criando...' : 'Criar curso' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <p class="hint">Carregando cursos...</p>
+  } @else {
+    <div class="card-grid">
+      @for (course of courses(); track course.id) {
+        <div class="course-card" (click)="open(course)">
+          <div class="card-thumb">
+            @if (course.coverImageUrl) {
+              <img [src]="course.coverImageUrl" [alt]="course.title" />
+            } @else {
+              <span>{{ course.title.charAt(0) }}</span>
+            }
+          </div>
+          <div class="card-body">
+            <strong>{{ course.title }}</strong>
+            @if (teacherName(course)) {
+              <span>Prof. {{ teacherName(course) }}</span>
+            }
+            <span class="status-badge" [class.draft]="!course.published">
+              {{ course.published ? 'Publicado' : 'Rascunho' }}
+            </span>
+          </div>
+          <div class="card-actions" (click)="$event.stopPropagation()">
+            <app-icon-button icon="edit" label="Editar" (pressed)="open(course)" />
+            <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="remove(course)" />
+          </div>
+        </div>
+      }
+      @if (courses().length === 0) {
+        <p class="hint">Nenhum curso cadastrado ainda.</p>
+      }
+    </div>
+  }
+</app-dashboard-shell>
