@@ -1,19 +1,22 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { SettingsService } from '../../core/services/settings.service';
+import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
+import { ADMIN_NAV_ITEMS } from '../../shared/nav-items';
 
 @Component({
   selector: 'app-video-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, DashboardShellComponent],
   templateUrl: './video-settings.component.html',
   styleUrl: './video-settings.component.scss',
 })
 export class VideoSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private settingsService = inject(SettingsService);
+
+  navItems = ADMIN_NAV_ITEMS;
 
   loading = signal(true);
   saving = signal(false);
