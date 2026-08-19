@@ -39,6 +39,7 @@ export interface VideoMeta {
   playbackUrl?: string;
   durationSeconds: number;
   thumbnailUrl?: string;
+  status?: 'processing' | 'ready' | 'error';
 }
 
 export interface Lesson {

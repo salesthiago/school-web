@@ -133,15 +133,24 @@
               @if (!lesson.mandatory) {
                 <span class="status-badge inactive">Opcional</span>
               }
-              @if (lesson.video?.playbackUrl) {
-                <span class="status-badge">Vídeo enviado</span>
-              } @else {
-                <span class="status-badge inactive">Sem vídeo</span>
+              @switch (lesson.video?.status) {
+                @case ('ready') {
+                  <span class="status-badge">Vídeo pronto</span>
+                }
+                @case ('processing') {
+                  <span class="status-badge processing">Processando vídeo...</span>
+                }
+                @case ('error') {
+                  <span class="status-badge inactive">Falha no processamento</span>
+                }
+                @default {
+                  <span class="status-badge inactive">Sem vídeo</span>
+                }
               }
             </div>
             <div class="lesson-actions">
               <label class="upload-btn small" [class.disabled]="uploadingVideoFor() === lesson.id">
-                {{ uploadingVideoFor() === lesson.id ? 'Enviando...' : 'Enviar vídeo' }}
+                {{ uploadingVideoFor() === lesson.id ? 'Enviando ' + videoUploadProgress() + '%...' : 'Enviar vídeo' }}
                 <input
                   type="file"
                   accept="video/*"

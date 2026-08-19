@@ -1,8 +1,9 @@
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { QuillEditorComponent } from 'ngx-quill';
+import { Subscription, interval, switchMap, take, takeWhile } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
 import { LessonsService } from '../../core/services/lessons.service';
 import { AttachmentsService } from '../../core/services/attachments.service';
@@ -11,6 +12,9 @@ import { Attachment, CourseModule, Lesson } from '../../core/models/academic.mod
 import { DashboardShellComponent } from '../components/dashboard-shell.component';
 import { IconButtonComponent } from '../components/icon-button.component';
 import { ADMIN_NAV_ITEMS, TEACHER_NAV_ITEMS } from '../nav-items';
+
+const VIDEO_POLL_INTERVAL_MS = 8000;
+const VIDEO_POLL_MAX_ATTEMPTS = 100; // ~13min; depois disso, revisitar a página retoma o polling
 
 @Component({
   selector: 'app-module-detail',
@@ -26,7 +30,7 @@ import { ADMIN_NAV_ITEMS, TEACHER_NAV_ITEMS } from '../nav-items';
   templateUrl: './module-detail.component.html',
   styleUrl: './module-detail.component.scss',
 })
-export class ModuleDetailComponent implements OnInit {
+export class ModuleDetailComponent implements OnInit, OnDestroy {
   @Input({ required: true }) courseId!: string;
   @Input({ required: true }) moduleId!: string;
 
@@ -44,12 +48,14 @@ export class ModuleDetailComponent implements OnInit {
   savingLesson = signal(false);
   lessonError = signal<string | null>(null);
   uploadingVideoFor = signal<string | null>(null);
+  videoUploadProgress = signal(0);
 
   expandedLessonId = signal<string | null>(null);
   attachmentsByLesson = signal<Record<string, Attachment[]>>({});
   uploadingAttachmentFor = signal<string | null>(null);
 
   private fb = inject(FormBuilder);
+  private pollingSubs = new Map<string, Subscription>();
 
   moduleForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -104,7 +110,36 @@ export class ModuleDetailComponent implements OnInit {
   }
 
   loadLessons() {
-    this.lessonsService.listByModule(this.moduleId).subscribe((lessons) => this.lessons.set(lessons));
+    this.lessonsService.listByModule(this.moduleId).subscribe((lessons) => {
+      this.lessons.set(lessons);
+      for (const lesson of lessons) {
+        if (lesson.video?.status === 'processing') {
+          this.pollLessonStatus(lesson.id);
+        }
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    for (const sub of this.pollingSubs.values()) sub.unsubscribe();
+  }
+
+  /** Vídeo enviado ao Bunny ainda precisa processar — acompanha até ficar pronto/falhar. */
+  private pollLessonStatus(lessonId: string) {
+    if (this.pollingSubs.has(lessonId)) return;
+    const sub = interval(VIDEO_POLL_INTERVAL_MS)
+      .pipe(
+        switchMap(() => this.lessonsService.getLesson(lessonId)),
+        takeWhile((lesson) => lesson.video?.status === 'processing', true),
+        take(VIDEO_POLL_MAX_ATTEMPTS),
+      )
+      .subscribe({
+        next: (updated) => {
+          this.lessons.update((list) => list.map((l) => (l.id === lessonId ? updated : l)));
+        },
+        complete: () => this.pollingSubs.delete(lessonId),
+      });
+    this.pollingSubs.set(lessonId, sub);
   }
 
   submitModule() {
@@ -190,25 +225,34 @@ export class ModuleDetailComponent implements OnInit {
     const confirmed = window.confirm(`Excluir a aula "${lesson.title}"? Isso remove seus anexos também.`);
     if (!confirmed) return;
     this.lessonsService.deleteLesson(lesson.id).subscribe({
-      next: () => this.lessons.update((list) => list.filter((l) => l.id !== lesson.id)),
+      next: () => {
+        this.pollingSubs.get(lesson.id)?.unsubscribe();
+        this.pollingSubs.delete(lesson.id);
+        this.lessons.update((list) => list.filter((l) => l.id !== lesson.id));
+      },
       error: (err) => window.alert(err?.error?.message ?? 'Não foi possível excluir a aula.'),
     });
   }
 
-  onVideoSelected(lesson: Lesson, event: Event) {
+  async onVideoSelected(lesson: Lesson, event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     this.uploadingVideoFor.set(lesson.id);
-    this.lessonsService.uploadVideo(lesson.id, file).subscribe({
-      next: (updated) => {
-        this.lessons.update((list) => list.map((l) => (l.id === lesson.id ? updated : l)));
-        this.uploadingVideoFor.set(null);
-      },
-      error: (err) => {
-        this.uploadingVideoFor.set(null);
-        window.alert(err?.error?.message ?? 'Não foi possível enviar o vídeo.');
-      },
-    });
+    this.videoUploadProgress.set(0);
+    try {
+      const updated = await this.lessonsService.uploadVideoDirect(lesson.id, file, (percent) =>
+        this.videoUploadProgress.set(percent),
+      );
+      this.lessons.update((list) => list.map((l) => (l.id === lesson.id ? updated : l)));
+      this.uploadingVideoFor.set(null);
+      if (updated.video?.status === 'processing') {
+        this.pollLessonStatus(lesson.id);
+      }
+    } catch (err: unknown) {
+      this.uploadingVideoFor.set(null);
+      const message = (err as { message?: string })?.message;
+      window.alert(message ?? 'Não foi possível enviar o vídeo.');
+    }
   }
 
   toggleAttachments(lesson: Lesson) {

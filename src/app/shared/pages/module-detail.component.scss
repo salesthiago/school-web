@@ -79,6 +79,11 @@
     color: $ink;
     font-size: 0.9rem;
   }
+
+  .status-badge.processing {
+    background: #fff3e0;
+    color: #ef6c00;
+  }
 }
 
 .lesson-actions {
