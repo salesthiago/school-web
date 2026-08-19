@@ -45,7 +45,7 @@
       <div class="topbar-actions">
         <div class="menu-wrap">
           <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
-            <app-icon name="bell" />
+            <app-icon name="notifications" />
             @if (unreadCount() > 0) {
               <span class="badge">{{ unreadCount() }}</span>
             }
@@ -79,14 +79,14 @@
                 <strong>Olá, {{ user.name }}</strong>
                 <span>{{ roleLabel(user.role) }}</span>
               </span>
-              <app-icon name="chevron-down" />
+              <app-icon name="expand_more" />
             </button>
             @if (userMenuOpen()) {
               <div class="dropdown user-dropdown">
                 @if (profileLink) {
-                  <a [routerLink]="profileLink"><app-icon name="user" />Meu perfil</a>
+                  <a [routerLink]="profileLink"><app-icon name="person" />Meu perfil</a>
                 }
-                <button type="button" (click)="authService.logout()"><app-icon name="log-out" />Sair</button>
+                <button type="button" (click)="authService.logout()"><app-icon name="logout" />Sair</button>
               </div>
             }
           </div>
@@ -104,7 +104,7 @@
         </div>
         <div class="mobile-actions">
           <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
-            <app-icon name="bell" />
+            <app-icon name="notifications" />
             @if (unreadCount() > 0) {
               <span class="badge">{{ unreadCount() }}</span>
             }

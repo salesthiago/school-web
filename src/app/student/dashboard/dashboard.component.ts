@@ -7,7 +7,8 @@ import { CertificatesService } from '../../core/services/certificates.service';
 import { CoursesService } from '../../core/services/courses.service';
 import { CourseModule, Course, ModuleProgressSummary, Certificate } from '../../core/models/academic.model';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
-import { DashboardShellComponent, ShellNavItem } from '../../shared/components/dashboard-shell.component';
+import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
+import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
 
 interface EnrollmentView {
   module: CourseModule;
@@ -40,17 +41,7 @@ export class DashboardComponent implements OnInit {
   certificates = signal<Certificate[]>([]);
   recommended = signal<RecommendedCourseView[]>([]);
 
-  navItems: ShellNavItem[] = [
-    { label: 'Dashboard', link: '/student', exact: true, icon: 'home' },
-    { label: 'Meus Cursos', link: '/student/meus-cursos', exact: false, icon: 'book' },
-    { label: 'Explorar Cursos', link: '/student/explorar', exact: false, icon: 'compass' },
-    { label: 'Certificados', link: '/student/certificates', exact: false, icon: 'award' },
-    { label: 'Wishlist', link: '/student/wishlist', exact: false, icon: 'heart' },
-    { label: 'Histórico', link: '/student/historico', exact: false, icon: 'clock' },
-    { label: 'Perfil', link: '/student/profile', exact: false, icon: 'user' },
-    { label: 'Configurações', link: '/student/configuracoes', exact: false, icon: 'settings' },
-    { label: 'Ajuda', link: '/student/ajuda', exact: false, icon: 'help' },
-  ];
+  navItems = STUDENT_NAV_ITEMS;
 
   constructor(
     private enrollmentsService: EnrollmentsService,

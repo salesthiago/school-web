@@ -1,0 +1,163 @@
+<app-dashboard-shell [navItems]="navItems">
+  <div class="page-head">
+    <h1 class="page-title">{{ title }}</h1>
+    @if (!readOnly) {
+      <app-icon-button
+        icon="add"
+        [label]="'Novo ' + roleLabel"
+        [showLabel]="true"
+        variant="primary"
+        (pressed)="openCreate()"
+      />
+    }
+  </div>
+
+  <div class="filters">
+    <input
+      type="text"
+      placeholder="Buscar por nome ou e-mail..."
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    />
+    @if (isStudentScreen) {
+      <label class="checkbox-filter">
+        <input
+          type="checkbox"
+          [checked]="onlyWithoutEnrollments()"
+          (change)="onlyWithoutEnrollments.set($any($event.target).checked)"
+        />
+        Somente sem curso matriculado
+      </label>
+    }
+  </div>
+
+  @if (!readOnly && formOpen()) {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="user-form">
+      <h2>{{ editingUser() ? 'Editar ' + roleLabel.toLowerCase() : 'Novo ' + roleLabel }}</h2>
+
+      <div class="form-grid">
+        <label>
+          Nome
+          <input type="text" formControlName="name" placeholder="Nome completo" />
+        </label>
+
+        <label>
+          E-mail
+          <input type="email" formControlName="email" placeholder="email@exemplo.com" />
+        </label>
+
+        <label>
+          Telefone
+          <input type="tel" formControlName="phone" placeholder="(00) 00000-0000" />
+        </label>
+
+        @if (!editingUser()) {
+          <label>
+            Senha inicial
+            <input type="password" formControlName="password" placeholder="Mínimo 8 caracteres" />
+          </label>
+        }
+
+        @if (editingUser()) {
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="active" />
+            Usuário ativo
+          </label>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="primary-btn" [disabled]="form.invalid || saving()">
+          {{ saving() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (!readOnly && passwordUser(); as pu) {
+    <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="user-form">
+      <h2>Alterar senha — {{ pu.name }}</h2>
+
+      <div class="form-grid">
+        <label>
+          Nova senha
+          <input type="password" formControlName="password" placeholder="Mínimo 8 caracteres" />
+        </label>
+      </div>
+
+      @if (passwordError()) {
+        <p class="error">{{ passwordError() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" (click)="closePasswordForm()">Cancelar</button>
+        <button type="submit" class="primary-btn" [disabled]="passwordForm.invalid || savingPassword()">
+          {{ savingPassword() ? 'Salvando...' : 'Salvar senha' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <p class="hint">Carregando...</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>E-mail</th>
+            @if (isStudentScreen) {
+              <th>Matrícula</th>
+            }
+            <th>Status</th>
+            @if (!readOnly) {
+              <th></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of filteredUsers(); track user.id) {
+            <tr>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              @if (isStudentScreen) {
+                <td>
+                  @if (user.hasEnrollments === false) {
+                    <span class="status-badge inactive">Sem curso</span>
+                  } @else {
+                    <span class="status-badge">Matriculado</span>
+                  }
+                </td>
+              }
+              <td>
+                <span class="status-badge" [class.inactive]="user.active === false">
+                  {{ user.active === false ? 'Inativo' : 'Ativo' }}
+                </span>
+              </td>
+              @if (!readOnly) {
+                <td class="actions">
+                  <app-icon-button icon="edit" label="Editar" (pressed)="openEdit(user)" />
+                  <app-icon-button icon="lock_reset" label="Alterar senha" (pressed)="openPasswordChange(user)" />
+                  @if (!isSelf(user)) {
+                    <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="remove(user)" />
+                  }
+                </td>
+              }
+            </tr>
+          }
+          @if (filteredUsers().length === 0) {
+            <tr>
+              <td [attr.colspan]="isStudentScreen ? 5 : 4" class="hint">Nenhum registro encontrado.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</app-dashboard-shell>

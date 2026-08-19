@@ -77,7 +77,12 @@ export const routes: Routes = [
       { path: 'modules', component: ComingSoonComponent, data: { title: 'Módulos' } },
       { path: 'lessons', component: ComingSoonComponent, data: { title: 'Aulas' } },
       { path: 'exams', component: ComingSoonComponent, data: { title: 'Avaliações' } },
-      { path: 'students', component: ComingSoonComponent, data: { title: 'Alunos matriculados' } },
+      {
+        path: 'students',
+        loadComponent: () =>
+          import('./shared/pages/role-users.component').then((m) => m.RoleUsersComponent),
+        data: { role: 'student', title: 'Alunos matriculados', readOnly: true },
+      },
     ],
   },
 
@@ -91,12 +96,24 @@ export const routes: Routes = [
           import('./admin/dashboard/dashboard.component').then((m) => m.AdminDashboardComponent),
       },
       {
-        path: 'users',
+        path: 'students',
         loadComponent: () =>
-          import('./admin/users/users.component').then((m) => m.AdminUsersComponent),
+          import('./shared/pages/role-users.component').then((m) => m.RoleUsersComponent),
+        data: { role: 'student', title: 'Alunos' },
+      },
+      {
+        path: 'teachers',
+        loadComponent: () =>
+          import('./shared/pages/role-users.component').then((m) => m.RoleUsersComponent),
+        data: { role: 'teacher', title: 'Professores' },
+      },
+      {
+        path: 'admins',
+        loadComponent: () =>
+          import('./shared/pages/role-users.component').then((m) => m.RoleUsersComponent),
+        data: { role: 'admin', title: 'Administradores' },
       },
       { path: 'courses', component: ComingSoonComponent, data: { title: 'Cursos' } },
-      { path: 'teachers', component: ComingSoonComponent, data: { title: 'Professores' } },
       { path: 'payments', component: ComingSoonComponent, data: { title: 'Pagamentos' } },
       { path: 'reports', component: ComingSoonComponent, data: { title: 'Relatórios' } },
       { path: 'settings', component: ComingSoonComponent, data: { title: 'Identidade visual' } },

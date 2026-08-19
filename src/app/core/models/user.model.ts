@@ -27,6 +27,8 @@ export interface User {
   active?: boolean;
   avatarUrl?: string;
   socialLinks?: SocialLinks;
+  /** Só vem preenchido nas listagens filtradas por role=student. */
+  hasEnrollments?: boolean;
 }
 
 export interface AuthTokens {

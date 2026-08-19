@@ -58,6 +58,10 @@ export class UsersService {
     return this.http.patch<User>(`${environment.apiUrl}/users/${id}`, payload);
   }
 
+  resetPassword(id: string, password: string) {
+    return this.http.patch<void>(`${environment.apiUrl}/users/${id}/password`, { password });
+  }
+
   remove(id: string) {
     return this.http.delete<void>(`${environment.apiUrl}/users/${id}`);
   }

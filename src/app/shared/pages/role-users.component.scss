@@ -50,22 +50,28 @@ $border: #e6e9f0;
 
 .filters {
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
 
-  input,
-  select {
+  input[type='text'] {
     padding: 0.6rem 0.85rem;
     border-radius: 10px;
     border: 1px solid $border;
     font-size: 0.85rem;
-  }
-
-  input {
     flex: 1;
     min-width: 220px;
   }
+}
+
+.checkbox-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #445;
+  white-space: nowrap;
 }
 
 .user-form {
@@ -157,25 +163,6 @@ tr:last-child td {
   border-bottom: none;
 }
 
-.role-badge {
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  background: #ede9fe;
-  color: $accent;
-
-  &.role-teacher {
-    background: #e0f2f1;
-    color: #00796b;
-  }
-
-  &.role-admin {
-    background: #fff3e0;
-    color: #ef6c00;
-  }
-}
-
 .status-badge {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
@@ -192,19 +179,5 @@ tr:last-child td {
 
 .actions {
   display: flex;
-  gap: 0.75rem;
-}
-
-.link-btn {
-  border: none;
-  background: none;
-  color: $accent;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-
-  &.danger {
-    color: #c62828;
-  }
+  gap: 0.25rem;
 }
