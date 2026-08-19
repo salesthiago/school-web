@@ -23,7 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         !isPublic &&
         authService.getRefreshToken()
       ) {
-        return authService.refresh().pipe(
+        return authService.refreshShared().pipe(
           switchMap(() => {
             const retryToken = authService.getAccessToken();
             const retryReq = req.clone({ setHeaders: { Authorization: `Bearer ${retryToken}` } });

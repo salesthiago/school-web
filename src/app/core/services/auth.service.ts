@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, finalize, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthTokens, Role, User } from '../models/user.model';
 import { UsersService } from './users.service';
@@ -54,6 +54,28 @@ export class AuthService {
     return this.http
       .post<AuthTokens>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
       .pipe(tap((tokens) => this.storeTokens(tokens)));
+  }
+
+  private refreshInFlight$: Observable<AuthTokens> | null = null;
+
+  /**
+   * O backend roda o refresh token a cada uso (rotação) — se duas
+   * requisições expirarem ao mesmo tempo e cada uma chamar refresh()
+   * separadamente, a segunda usa um refresh token já invalidado pela
+   * primeira e derruba a sessão à toa. Isso aconteceu de verdade com uploads
+   * de vídeo longos (token de acesso de 15min expira durante o processamento
+   * no Bunny, e o polling de status mais alguma outra chamada acabam
+   * disparando refresh ao mesmo tempo). Esta versão compartilha uma única
+   * chamada em andamento entre todas as requisições 401 concorrentes.
+   */
+  refreshShared(): Observable<AuthTokens> {
+    if (!this.refreshInFlight$) {
+      this.refreshInFlight$ = this.refresh().pipe(
+        finalize(() => (this.refreshInFlight$ = null)),
+        shareReplay(1),
+      );
+    }
+    return this.refreshInFlight$;
   }
 
   logout() {
