@@ -142,7 +142,11 @@ export const routes: Routes = [
       },
       { path: 'payments', component: ComingSoonComponent, data: { title: 'Pagamentos' } },
       { path: 'reports', component: ComingSoonComponent, data: { title: 'Relatórios' } },
-      { path: 'settings', component: ComingSoonComponent, data: { title: 'Identidade visual' } },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./admin/branding/branding.component').then((m) => m.BrandingComponent),
+      },
       {
         path: 'video-settings',
         loadComponent: () =>

@@ -1,6 +1,13 @@
 @import 'material-icons/iconfont/outlined.css';
 @import 'quill/dist/quill.snow.css';
 
+:root {
+  --color-primary: #6c4bf4;
+  --color-primary-dark: #5636d8;
+  --color-secondary: #26a69a;
+  --color-secondary-dark: #1e8074;
+}
+
 * {
   box-sizing: border-box;
 }

@@ -2,6 +2,9 @@ export interface Institution {
   id: string;
   name: string;
   logoUrl?: string;
+  loginBackgroundUrl?: string;
+  registerBackgroundUrl?: string;
+  studentBannerUrl?: string;
   primaryColor: string;
   secondaryColor: string;
   address?: string;

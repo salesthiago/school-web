@@ -13,6 +13,12 @@
     </div>
   </section>
 
+  @if (studentBannerUrl(); as bannerUrl) {
+    <section class="featured-banner">
+      <img [src]="bannerUrl" alt="Destaque" />
+    </section>
+  }
+
   @if (loading()) {
     <p class="hint">Carregando seus cursos...</p>
   } @else {

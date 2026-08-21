@@ -5,15 +5,36 @@
   justify-content: center;
   padding: 1.5rem;
   background: #f4f6fb;
+  background-size: cover;
+  background-position: center;
+
+  &.has-bg {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 15, 25, 0.45);
+    }
+  }
 }
 
 .auth-card {
+  position: relative;
   width: 100%;
   max-width: 380px;
   background: #fff;
   border-radius: 16px;
   padding: 2rem 1.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.auth-logo {
+  display: block;
+  max-height: 48px;
+  max-width: 100%;
+  margin: 0 auto 1.25rem;
 }
 
 h1 {
@@ -53,7 +74,7 @@ button {
   padding: 0.85rem;
   border: none;
   border-radius: 10px;
-  background: #1565c0;
+  background: var(--color-primary);
   color: #fff;
   font-size: 1rem;
   font-weight: 600;
@@ -78,7 +99,7 @@ button {
   color: #556;
 
   a {
-    color: #1565c0;
+    color: var(--color-primary);
     font-weight: 600;
     text-decoration: none;
   }

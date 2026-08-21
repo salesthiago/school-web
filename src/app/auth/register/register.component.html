@@ -1,5 +1,12 @@
-<div class="auth-screen">
+<div
+  class="auth-screen"
+  [class.has-bg]="institution()?.registerBackgroundUrl"
+  [style.background-image]="institution()?.registerBackgroundUrl ? 'url(' + institution()!.registerBackgroundUrl + ')' : null"
+>
   <div class="auth-card">
+    @if (institution()?.logoUrl) {
+      <img class="auth-logo" [src]="institution()!.logoUrl" [alt]="institution()!.name" />
+    }
     <h1>Criar conta</h1>
     <p class="subtitle">Comece a estudar em minutos</p>
 

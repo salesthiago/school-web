@@ -5,6 +5,7 @@ import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
 import { CertificatesService } from '../../core/services/certificates.service';
 import { CoursesService } from '../../core/services/courses.service';
+import { InstitutionsService } from '../../core/services/institutions.service';
 import { CourseModule, Course, ModuleProgressSummary, Certificate } from '../../core/models/academic.model';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
@@ -40,6 +41,7 @@ export class DashboardComponent implements OnInit {
   completed = signal<EnrollmentView[]>([]);
   certificates = signal<Certificate[]>([]);
   recommended = signal<RecommendedCourseView[]>([]);
+  studentBannerUrl = signal<string | undefined>(undefined);
 
   navItems = STUDENT_NAV_ITEMS;
 
@@ -47,9 +49,14 @@ export class DashboardComponent implements OnInit {
     private enrollmentsService: EnrollmentsService,
     private certificatesService: CertificatesService,
     private coursesService: CoursesService,
+    private institutionsService: InstitutionsService,
   ) {}
 
   ngOnInit() {
+    this.institutionsService
+      .getPublic()
+      .subscribe((institution) => this.studentBannerUrl.set(institution.studentBannerUrl));
+
     this.enrollmentsService
       .myEnrollments()
       .pipe(

@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { InstitutionsService } from './core/services/institutions.service';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -8,4 +10,11 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  private institutionsService = inject(InstitutionsService);
+  private themeService = inject(ThemeService);
+
+  ngOnInit() {
+    this.institutionsService.getPublic().subscribe((institution) => this.themeService.apply(institution));
+  }
+}

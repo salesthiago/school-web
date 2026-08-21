@@ -1,8 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { InstitutionsService } from '../../core/services/institutions.service';
+import { Institution } from '../../core/models/academic.model';
 
 @Component({
   selector: 'app-register',
@@ -11,13 +13,15 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private institutionsService = inject(InstitutionsService);
   private router = inject(Router);
 
   loading = signal(false);
   errorMessage = signal<string | null>(null);
+  institution = signal<Institution | null>(null);
 
   form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -25,6 +29,10 @@ export class RegisterComponent {
     phone: [''],
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
+
+  ngOnInit() {
+    this.institutionsService.getPublic().subscribe((institution) => this.institution.set(institution));
+  }
 
   submit() {
     if (this.form.invalid) return;

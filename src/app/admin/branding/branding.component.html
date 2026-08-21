@@ -1,0 +1,139 @@
+<app-dashboard-shell [navItems]="navItems">
+  <div class="page-head">
+    <h1 class="page-title">Identidade visual</h1>
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Carregando...</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="entity-form">
+      <h2>Dados gerais</h2>
+
+      <div class="form-grid">
+        <label>
+          Nome da instituição
+          <input type="text" formControlName="name" placeholder="GPschool" />
+        </label>
+
+        <label>
+          Cor Principal
+          <input type="color" formControlName="primaryColor" />
+        </label>
+
+        <label>
+          Cor Secundária
+          <input type="color" formControlName="secondaryColor" />
+        </label>
+
+        <label>
+          Endereço
+          <input type="text" formControlName="address" placeholder="Rua, número, cidade" />
+        </label>
+
+        <label>
+          Telefone
+          <input type="text" formControlName="phone" placeholder="(00) 00000-0000" />
+        </label>
+
+        <label>
+          E-mail de contato
+          <input type="email" formControlName="email" placeholder="contato@escola.com" />
+        </label>
+
+        <label>
+          Site
+          <input type="text" formControlName="website" placeholder="https://" />
+        </label>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+      @if (successMessage()) {
+        <p class="success">{{ successMessage() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="primary-btn" [disabled]="form.invalid || saving()">
+          {{ saving() ? 'Salvando...' : 'Salvar configurações' }}
+        </button>
+      </div>
+    </form>
+
+    <div class="entity-form">
+      <h2>Logo da escola</h2>
+      <p class="hint">Exibida no topo das telas de login e cadastro.</p>
+      <div class="image-row">
+        @if (institution()?.logoUrl) {
+          <img class="preview preview-logo" [src]="institution()!.logoUrl" alt="Logo" />
+        } @else {
+          <span class="preview-empty">Sem logo</span>
+        }
+        <input type="file" accept="image/*" (change)="onFileSelected('logo', $event)" [disabled]="uploading() === 'logo'" />
+        @if (uploading() === 'logo') {
+          <span class="hint">Enviando...</span>
+        }
+      </div>
+    </div>
+
+    <div class="entity-form">
+      <h2>Imagem de fundo — Login</h2>
+      <div class="image-row">
+        @if (institution()?.loginBackgroundUrl) {
+          <img class="preview" [src]="institution()!.loginBackgroundUrl" alt="Fundo do login" />
+        } @else {
+          <span class="preview-empty">Sem imagem</span>
+        }
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected('loginBackground', $event)"
+          [disabled]="uploading() === 'loginBackground'"
+        />
+        @if (uploading() === 'loginBackground') {
+          <span class="hint">Enviando...</span>
+        }
+      </div>
+    </div>
+
+    <div class="entity-form">
+      <h2>Banner — Tela de cadastro</h2>
+      <div class="image-row">
+        @if (institution()?.registerBackgroundUrl) {
+          <img class="preview" [src]="institution()!.registerBackgroundUrl" alt="Fundo do cadastro" />
+        } @else {
+          <span class="preview-empty">Sem imagem</span>
+        }
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected('registerBackground', $event)"
+          [disabled]="uploading() === 'registerBackground'"
+        />
+        @if (uploading() === 'registerBackground') {
+          <span class="hint">Enviando...</span>
+        }
+      </div>
+    </div>
+
+    <div class="entity-form">
+      <h2>Banner de destaque — Home do aluno</h2>
+      <div class="image-row">
+        @if (institution()?.studentBannerUrl) {
+          <img class="preview" [src]="institution()!.studentBannerUrl" alt="Banner de destaque" />
+        } @else {
+          <span class="preview-empty">Sem imagem</span>
+        }
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected('studentBanner', $event)"
+          [disabled]="uploading() === 'studentBanner'"
+        />
+        @if (uploading() === 'studentBanner') {
+          <span class="hint">Enviando...</span>
+        }
+      </div>
+    </div>
+  }
+</app-dashboard-shell>

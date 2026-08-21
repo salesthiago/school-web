@@ -1,8 +1,8 @@
 // Padrão visual compartilhado pelas telas de listagem/CRUD do admin e
 // professor (usuários, cursos, módulos, aulas): cabeçalho, formulário
 // inline, tabela e badges. Import com `@import` em cada component scss.
-$accent: #6c4bf4;
-$accent-dark: #5636d8;
+$accent: var(--color-primary);
+$accent-dark: var(--color-primary-dark);
 $ink: #1a1d29;
 $muted: #6b7280;
 $border: #e6e9f0;
