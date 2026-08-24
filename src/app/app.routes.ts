@@ -141,7 +141,11 @@ export const routes: Routes = [
           import('./shared/pages/module-detail.component').then((m) => m.ModuleDetailComponent),
       },
       { path: 'payments', component: ComingSoonComponent, data: { title: 'Pagamentos' } },
-      { path: 'reports', component: ComingSoonComponent, data: { title: 'Relatórios' } },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./admin/reports/reports.component').then((m) => m.AdminReportsComponent),
+      },
       {
         path: 'settings',
         loadComponent: () =>
