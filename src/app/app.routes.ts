@@ -33,6 +33,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'cursos/:id',
+        loadComponent: () =>
+          import('./student/course-detail/course-detail.component').then(
+            (m) => m.StudentCourseDetailComponent,
+          ),
+      },
+      {
         path: 'exams/:examId',
         loadComponent: () =>
           import('./student/exams/exam-take.component').then((m) => m.ExamTakeComponent),

@@ -11,6 +11,10 @@ export class EnrollmentsService {
     return this.http.get<Enrollment[]>(`${environment.apiUrl}/enrollments/mine`);
   }
 
+  enroll(moduleId: string) {
+    return this.http.post<Enrollment>(`${environment.apiUrl}/enrollments/enroll`, { moduleId });
+  }
+
   moduleProgress(moduleId: string) {
     return this.http.get<ModuleProgressSummary>(`${environment.apiUrl}/progress/module/${moduleId}`);
   }

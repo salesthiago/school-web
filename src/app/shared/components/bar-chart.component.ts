@@ -7,19 +7,25 @@ import { DailyCount } from '../../core/models/stats.model';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="bar-chart">
-      @for (item of data(); track item.date) {
-        <div class="bar-col" [title]="tooltip(item)">
-          <div class="bar-track">
-            <div class="bar" [style.height.%]="heightPercent(item.count)" [style.background]="color"></div>
+    <div class="bar-chart-scroll">
+      <div class="bar-chart">
+        @for (item of data(); track item.date) {
+          <div class="bar-col" [title]="tooltip(item)">
+            <div class="bar-track">
+              <div class="bar" [style.height.%]="heightPercent(item.count)" [style.background]="color"></div>
+            </div>
+            <span class="bar-label">{{ dayLabel(item.date) }}</span>
           </div>
-          <span class="bar-label">{{ dayLabel(item.date) }}</span>
-        </div>
-      }
+        }
+      </div>
     </div>
   `,
   styles: [
     `
+      .bar-chart-scroll {
+        overflow-x: auto;
+      }
+
       .bar-chart {
         display: flex;
         align-items: flex-end;
@@ -30,6 +36,7 @@ import { DailyCount } from '../../core/models/stats.model';
 
       .bar-col {
         flex: 1;
+        min-width: 18px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -53,6 +60,7 @@ import { DailyCount } from '../../core/models/stats.model';
       .bar-label {
         font-size: 0.65rem;
         color: #8a8fa3;
+        white-space: nowrap;
       }
     `,
   ],

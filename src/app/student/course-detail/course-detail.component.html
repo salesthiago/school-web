@@ -1,0 +1,111 @@
+<div class="course-detail-screen">
+  <a class="back-link" routerLink="/student">← Voltar</a>
+
+  @if (loading()) {
+    <p class="hint">Carregando curso...</p>
+  } @else if (notFound()) {
+    <p class="hint">Curso não encontrado.</p>
+  } @else {
+  @if (course(); as c) {
+    <div class="cover" [style.background]="thumbColor(c.title)">
+      @if (c.coverImageUrl) {
+        <img [src]="c.coverImageUrl" [alt]="c.title" />
+      } @else {
+        <span>{{ initial(c.title) }}</span>
+      }
+    </div>
+
+    <h1>{{ c.title }}</h1>
+    @if (teacherName(); as name) {
+      <p class="teacher">Professor(a): {{ name }}</p>
+    }
+    @if (c.description) {
+      <p class="description">{{ c.description }}</p>
+    }
+
+    <h2>Módulos</h2>
+    @if (moduleViews().length === 0) {
+      <p class="hint">Nenhum módulo publicado ainda.</p>
+    }
+    @for (view of moduleViews(); track view.module.id) {
+      <div class="module-card">
+        <div class="module-info">
+          <strong>{{ view.module.title }}</strong>
+          @if (view.module.description) {
+            <p>{{ view.module.description }}</p>
+          }
+          <span class="meta">{{ view.module.workloadHours }}h · {{ view.priceLabel }}</span>
+        </div>
+
+        @switch (view.state) {
+          @case ('enrolled') {
+            <button class="cta enrolled" (click)="continueModule(view.module.id)">Continuar</button>
+          }
+          @case ('free') {
+            <button
+              class="cta"
+              [disabled]="enrollingModuleId() === view.module.id"
+              (click)="enrollFree(view.module)"
+            >
+              {{ enrollingModuleId() === view.module.id ? 'Matriculando...' : 'Matricular grátis' }}
+            </button>
+          }
+          @case ('paid') {
+            <button class="cta" (click)="openCheckout(view.module)">Comprar — {{ view.priceLabel }}</button>
+          }
+        }
+      </div>
+    }
+
+    @if (checkoutModule(); as cm) {
+      <div class="checkout-overlay" (click)="closeCheckout()">
+        <div class="checkout-panel" (click)="$event.stopPropagation()">
+          <button class="close-btn" (click)="closeCheckout()">✕</button>
+          <h3>Comprar "{{ cm.title }}"</h3>
+
+          @if (!checkoutResult()) {
+            <div class="method-toggle">
+              <button [class.active]="checkoutMethod() === 'pix'" (click)="selectMethod('pix')">Pix</button>
+              <button [class.active]="checkoutMethod() === 'boleto'" (click)="selectMethod('boleto')">
+                Boleto
+              </button>
+            </div>
+            @if (checkoutError()) {
+              <p class="error">{{ checkoutError() }}</p>
+            }
+            <button class="cta" [disabled]="checkoutLoading()" (click)="startCheckout()">
+              {{ checkoutLoading() ? 'Gerando...' : 'Gerar cobrança' }}
+            </button>
+          } @else if (paymentConfirmed()) {
+            <p class="confirmed">✓ Pagamento confirmado!</p>
+            <button class="cta" (click)="goToPurchasedModule()">Começar agora</button>
+          } @else {
+            @if (checkoutMethod() === 'pix') {
+              <p class="hint">Pague com Pix usando o código abaixo no app do seu banco.</p>
+              <div class="copy-field">
+                <code>{{ checkoutResult()?.payment?.pixCopyPaste }}</code>
+                <button (click)="copy(checkoutResult()?.payment?.pixCopyPaste, 'pix')">
+                  {{ copiedField() === 'pix' ? 'Copiado!' : 'Copiar' }}
+                </button>
+              </div>
+            } @else {
+              <p class="hint">Pague o boleto usando a linha digitável ou abra o boleto completo.</p>
+              <div class="copy-field">
+                <code>{{ checkoutResult()?.payment?.boletoBarcode }}</code>
+                <button (click)="copy(checkoutResult()?.payment?.boletoBarcode, 'boleto')">
+                  {{ copiedField() === 'boleto' ? 'Copiado!' : 'Copiar' }}
+                </button>
+              </div>
+              @if (checkoutResult()?.payment?.boletoUrl; as url) {
+                <a class="boleto-link" [href]="url" target="_blank" rel="noopener">Abrir boleto</a>
+              }
+            }
+            <p class="waiting">Aguardando confirmação do pagamento...</p>
+          }
+        </div>
+      </div>
+    }
+  }
+  }
+</div>
+<app-bottom-nav />
