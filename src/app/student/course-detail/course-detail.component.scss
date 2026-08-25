@@ -3,10 +3,8 @@ $accent-dark: var(--color-primary-dark);
 $muted: #6b7280;
 $border: #e6e9f0;
 
-.course-detail-screen {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 1.25rem 1.25rem 5rem;
+.course-detail {
+  max-width: 640px;
 }
 
 .back-link {
@@ -55,10 +53,34 @@ h2 {
   margin: 0 0 0.6rem;
 }
 
-.description {
+// Conteúdo vem do editor rich-text (Quill) do professor/admin — pode trazer h1/p/listas
+// soltos; normaliza pra não competir com a tipografia da página.
+.description,
+.module-description {
   color: #444;
   font-size: 0.9rem;
   line-height: 1.5;
+
+  :is(h1, h2, h3, h4, h5, h6) {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0.6rem 0 0.3rem;
+  }
+
+  p {
+    margin: 0.3rem 0;
+  }
+
+  ul,
+  ol {
+    margin: 0.3rem 0;
+    padding-left: 1.2rem;
+  }
+}
+
+.module-description {
+  font-size: 0.8rem;
+  color: $muted;
 }
 
 .module-card {
@@ -79,12 +101,6 @@ h2 {
   strong {
     font-size: 0.92rem;
     display: block;
-  }
-
-  p {
-    margin: 0.2rem 0;
-    font-size: 0.8rem;
-    color: $muted;
   }
 
   .meta {

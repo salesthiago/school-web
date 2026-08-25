@@ -1,6 +1,7 @@
 import { Component, DestroyRef, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, interval, switchMap, takeWhile } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
@@ -9,6 +10,8 @@ import { PaymentsService } from '../../core/services/payments.service';
 import { Course, CourseModule } from '../../core/models/academic.model';
 import { CheckoutResponse, PaymentMethod } from '../../core/models/payment.model';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
+import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
+import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
 
 type ModuleState = 'enrolled' | 'free' | 'paid';
 
@@ -25,11 +28,13 @@ const POLL_TIMEOUT_MS = 15 * 60 * 1000;
 @Component({
   selector: 'app-student-course-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, BottomNavComponent],
+  imports: [CommonModule, RouterLink, BottomNavComponent, DashboardShellComponent],
   templateUrl: './course-detail.component.html',
   styleUrl: './course-detail.component.scss',
 })
 export class StudentCourseDetailComponent implements OnInit {
+  navItems = STUDENT_NAV_ITEMS;
+
   loading = signal(true);
   notFound = signal(false);
   course = signal<Course | null>(null);
@@ -53,7 +58,13 @@ export class StudentCourseDetailComponent implements OnInit {
     private enrollmentsService: EnrollmentsService,
     private paymentsService: PaymentsService,
     private destroyRef: DestroyRef,
+    private sanitizer: DomSanitizer,
   ) {}
+
+  /** Descrição vem do editor rich-text (Quill) usado por professor/admin — conteúdo confiável, não de aluno. */
+  safeHtml(html: string | undefined): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html ?? '');
+  }
 
   ngOnInit() {
     this.courseId = this.route.snapshot.paramMap.get('id')!;
