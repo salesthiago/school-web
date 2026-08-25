@@ -24,6 +24,11 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         border-top: 1px solid #e6e9f0;
         padding: 0.6rem 0 calc(0.6rem + env(safe-area-inset-bottom));
       }
+      @media (min-width: 960px) {
+        .bottom-nav {
+          display: none;
+        }
+      }
       a {
         flex: 1;
         text-align: center;
