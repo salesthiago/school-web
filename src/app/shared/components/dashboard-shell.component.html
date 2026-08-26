@@ -18,16 +18,20 @@
       }
     </nav>
 
-    @if (institution(); as inst) {
-      <div class="institution-card">
-        <strong>{{ inst.name }}</strong>
-        @if (inst.address) {
-          <p>{{ inst.address }}</p>
-        }
-        @if (inst.phone) {
-          <p>{{ inst.phone }}</p>
-        }
-      </div>
+    @if (authService.currentUser()?.role === 'student') {
+      <app-student-progress-widget />
+    } @else {
+      @if (institution(); as inst) {
+        <div class="institution-card">
+          <strong>{{ inst.name }}</strong>
+          @if (inst.address) {
+            <p>{{ inst.address }}</p>
+          }
+          @if (inst.phone) {
+            <p>{{ inst.phone }}</p>
+          }
+        </div>
+      }
     }
   </aside>
 

@@ -1,4 +1,8 @@
-@import '../../shared/styles/_admin-page';
+@use '../../shared/styles/admin-page' as *;
+
+.entity-form {
+  max-width: 640px;
+}
 
 input[type='color'] {
   padding: 0.25rem;

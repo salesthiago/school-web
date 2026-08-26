@@ -1,0 +1,10 @@
+@if (loaded() && hasEnrollments()) {
+  <div class="progress-widget">
+    <strong>Seu progresso geral</strong>
+    <div class="ring" [style.background]="'conic-gradient(var(--color-primary) ' + percentage() * 3.6 + 'deg, rgba(255,255,255,0.12) 0)'">
+      <div class="ring-hole">{{ percentage() }}%</div>
+    </div>
+    <span class="count">{{ inProgressCount() }} curso{{ inProgressCount() === 1 ? '' : 's' }} em andamento</span>
+    <a class="details-btn" routerLink="/student/meus-cursos">Ver detalhes</a>
+  </div>
+}

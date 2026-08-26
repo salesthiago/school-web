@@ -1,0 +1,196 @@
+<app-dashboard-shell [navItems]="navItems">
+  <div class="page-head">
+    <h1 class="page-title">Seu perfil</h1>
+    <p class="page-subtitle">Gerencie suas informações pessoais e preferências da plataforma.</p>
+  </div>
+
+  @if (authService.currentUser(); as user) {
+    <section class="hero-card">
+      <div class="hero-identity">
+        <div class="avatar-wrap">
+          @if (user.avatarUrl) {
+            <img class="avatar" [src]="user.avatarUrl" alt="Foto de perfil" />
+          } @else {
+            <div class="avatar avatar-placeholder">{{ initial(user.name) }}</div>
+          }
+          <label class="avatar-edit-btn" [class.disabled]="uploadingAvatar()">
+            📷
+            <input type="file" accept="image/*" hidden [disabled]="uploadingAvatar()" (change)="onAvatarSelected($event)" />
+          </label>
+        </div>
+        <div class="hero-info">
+          <strong>{{ user.name }}</strong>
+          <span class="email">✉ {{ user.email }}</span>
+          <span class="role-badge">{{ roleLabel(user.role) }}</span>
+          <span class="member-since">📅 Membro desde {{ memberSince() }}</span>
+        </div>
+      </div>
+
+      <div class="bio-card">
+        @if (editingBio()) {
+          <textarea
+            class="bio-textarea"
+            rows="3"
+            maxlength="280"
+            placeholder="Escreva uma frase sobre você..."
+            [value]="bioDraft()"
+            (input)="bioDraft.set($any($event.target).value)"
+          ></textarea>
+          <div class="bio-actions">
+            <button type="button" class="secondary-btn" (click)="cancelEditBio()">Cancelar</button>
+            <button type="button" class="primary-btn" [disabled]="bioSaving()" (click)="saveBio()">
+              {{ bioSaving() ? 'Salvando...' : 'Salvar' }}
+            </button>
+          </div>
+        } @else {
+          <blockquote>{{ user.bio || 'Adicione uma frase para aparecer aqui no seu perfil.' }}</blockquote>
+          <button type="button" class="secondary-btn" (click)="startEditBio()">✏ Editar biografia</button>
+        }
+      </div>
+    </section>
+
+    <div class="profile-grid">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="entity-form main-col">
+        <h2>Informações pessoais</h2>
+
+        <label>
+          Nome completo
+          <input type="text" formControlName="name" placeholder="Seu nome" />
+        </label>
+
+        <label>
+          E-mail
+          <input type="email" [value]="user.email" disabled />
+        </label>
+
+        <div class="form-grid">
+          <label>
+            Telefone
+            <input type="tel" formControlName="phone" placeholder="(00) 00000-0000" />
+          </label>
+
+          <label>
+            Data de nascimento
+            <input type="date" formControlName="birthDate" />
+          </label>
+        </div>
+
+        <label>
+          Instagram
+          <input type="text" formControlName="instagram" placeholder="@seuusuario" />
+        </label>
+
+        <label>
+          X (Twitter)
+          <input type="text" formControlName="twitter" placeholder="@seuusuario" />
+        </label>
+
+        @if (successMessage()) {
+          <p class="success">{{ successMessage() }}</p>
+        }
+        @if (errorMessage()) {
+          <p class="error">{{ errorMessage() }}</p>
+        }
+
+        <button type="submit" class="primary-btn" [disabled]="form.invalid || saving()">
+          {{ saving() ? 'Salvando...' : 'Salvar alterações' }}
+        </button>
+      </form>
+
+      <div class="side-col">
+        <div class="entity-form">
+          <h2>Segurança da conta</h2>
+          <p class="hint">Mantenha sua conta segura atualizando sua senha.</p>
+
+          @if (!changingPassword()) {
+            <button type="button" class="security-row" (click)="openPasswordForm()">
+              <span>
+                <strong>Alterar senha</strong>
+                <span class="hint">Última alteração: {{ passwordChangedLabel() }}</span>
+              </span>
+              <span class="chevron">›</span>
+            </button>
+          } @else {
+            <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="password-form">
+              <label>
+                Senha atual
+                <input type="password" formControlName="currentPassword" />
+              </label>
+              <label>
+                Nova senha
+                <input type="password" formControlName="newPassword" />
+              </label>
+              <label>
+                Confirmar nova senha
+                <input type="password" formControlName="confirmPassword" />
+              </label>
+              @if (passwordError()) {
+                <p class="error">{{ passwordError() }}</p>
+              }
+              <div class="form-actions">
+                <button type="button" class="secondary-btn" (click)="closePasswordForm()">Cancelar</button>
+                <button type="submit" class="primary-btn" [disabled]="passwordForm.invalid || passwordSaving()">
+                  {{ passwordSaving() ? 'Salvando...' : 'Salvar senha' }}
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+
+        <div class="entity-form">
+          <h2>Preferências</h2>
+          <p class="hint">Personalize sua experiência na plataforma.</p>
+
+          <label class="toggle-row">
+            <span>
+              <strong>Receber novidades por e-mail</strong>
+              <span class="hint">Fique por dentro de novos cursos e atualizações.</span>
+            </span>
+            <span class="toggle" [class.saving]="savingPreference() === 'emailNotifications'">
+              <input
+                type="checkbox"
+                [checked]="user.emailNotifications ?? true"
+                (change)="togglePreference('emailNotifications', $any($event.target).checked)"
+              />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </span>
+          </label>
+
+          <label class="toggle-row">
+            <span>
+              <strong>Notificações de conclusão</strong>
+              <span class="hint">Receba notificações ao concluir aulas e cursos.</span>
+            </span>
+            <span class="toggle" [class.saving]="savingPreference() === 'completionNotifications'">
+              <input
+                type="checkbox"
+                [checked]="user.completionNotifications ?? true"
+                (change)="togglePreference('completionNotifications', $any($event.target).checked)"
+              />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </span>
+          </label>
+        </div>
+
+        @if (isStudent) {
+          <div class="entity-form">
+            <h2>Área do aluno</h2>
+            <p class="hint">Acesse rapidamente suas atividades e conquistas.</p>
+            <a class="quick-link-row" routerLink="/student/certificates">
+              <span>
+                <strong>Meus certificados</strong>
+                <span class="hint">Veja seus certificados conquistados.</span>
+              </span>
+              <span class="chevron">›</span>
+            </a>
+          </div>
+        }
+
+        <button class="logout-btn" (click)="logout()">Sair</button>
+      </div>
+    </div>
+  }
+</app-dashboard-shell>
+@if (isStudent) {
+  <app-bottom-nav />
+}

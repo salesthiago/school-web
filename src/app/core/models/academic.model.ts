@@ -5,6 +5,7 @@ export interface Institution {
   loginBackgroundUrl?: string;
   registerBackgroundUrl?: string;
   studentBannerUrl?: string;
+  certificateTemplateUrl?: string;
   primaryColor: string;
   secondaryColor: string;
   address?: string;

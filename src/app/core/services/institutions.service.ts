@@ -31,6 +31,10 @@ export class InstitutionsService {
     return this.upload(id, 'student-banner', file);
   }
 
+  uploadCertificateTemplate(id: string, file: File) {
+    return this.upload(id, 'certificate-template', file);
+  }
+
   private upload(id: string, path: string, file: File) {
     const formData = new FormData();
     formData.append('file', file);

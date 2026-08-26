@@ -27,6 +27,12 @@ export interface User {
   active?: boolean;
   avatarUrl?: string;
   socialLinks?: SocialLinks;
+  bio?: string;
+  birthDate?: string;
+  emailNotifications?: boolean;
+  completionNotifications?: boolean;
+  createdAt?: string;
+  passwordChangedAt?: string;
   /** Só vem preenchido nas listagens filtradas por role=student. */
   hasEnrollments?: boolean;
 }

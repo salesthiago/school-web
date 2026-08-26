@@ -1,33 +1,36 @@
-<div class="exam-screen">
-  <a class="back-link" routerLink="/student">← Voltar</a>
+<app-dashboard-shell [navItems]="navItems">
+  <div class="exam-screen">
+    <a class="back-link" routerLink="/student">← Voltar</a>
 
-  @if (result(); as r) {
-    <div class="result-card" [class.passed]="r.passed">
-      <h2>{{ r.passed ? 'Aprovado!' : 'Não atingiu a nota mínima' }}</h2>
-      <p>Nota: {{ r.scorePercent }}% (mínimo {{ r.minScorePercent }}%)</p>
-    </div>
-  } @else {
-    <h1>Avaliação</h1>
-
-    @for (question of questions(); track question.id; let qi = $index) {
-      <div class="question-card">
-        <p class="question-text">{{ qi + 1 }}. {{ question.text }}</p>
-        @for (option of question.options; track option.index) {
-          <label class="option-row">
-            <input
-              [type]="question.type === 'single' ? 'radio' : 'checkbox'"
-              [name]="question.id"
-              [checked]="isSelected(question.id, option.index)"
-              (change)="toggleOption(question, option.index)"
-            />
-            {{ option.text }}
-          </label>
-        }
+    @if (result(); as r) {
+      <div class="result-card" [class.passed]="r.passed">
+        <h2>{{ r.passed ? 'Aprovado!' : 'Não atingiu a nota mínima' }}</h2>
+        <p>Nota: {{ r.scorePercent }}% (mínimo {{ r.minScorePercent }}%)</p>
       </div>
-    }
+    } @else {
+      <h1>Avaliação</h1>
 
-    <button class="submit-btn" [disabled]="submitting()" (click)="submit()">
-      {{ submitting() ? 'Enviando...' : 'Enviar respostas' }}
-    </button>
-  }
-</div>
+      @for (question of questions(); track question.id; let qi = $index) {
+        <div class="question-card">
+          <p class="question-text">{{ qi + 1 }}. {{ question.text }}</p>
+          @for (option of question.options; track option.index) {
+            <label class="option-row">
+              <input
+                [type]="question.type === 'single' ? 'radio' : 'checkbox'"
+                [name]="question.id"
+                [checked]="isSelected(question.id, option.index)"
+                (change)="toggleOption(question, option.index)"
+              />
+              {{ option.text }}
+            </label>
+          }
+        </div>
+      }
+
+      <button class="submit-btn" [disabled]="submitting()" (click)="submit()">
+        {{ submitting() ? 'Enviando...' : 'Enviar respostas' }}
+      </button>
+    }
+  </div>
+</app-dashboard-shell>
+<app-bottom-nav />

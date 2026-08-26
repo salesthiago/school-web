@@ -8,6 +8,15 @@ export interface UpdateProfilePayload {
   phone?: string;
   instagram?: string;
   twitter?: string;
+  bio?: string;
+  birthDate?: string;
+  emailNotifications?: boolean;
+  completionNotifications?: boolean;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface CreateUserPayload {
@@ -42,6 +51,10 @@ export class UsersService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<User>(`${environment.apiUrl}/users/me/avatar`, formData);
+  }
+
+  changePassword(payload: ChangePasswordPayload) {
+    return this.http.patch<User>(`${environment.apiUrl}/users/me/password`, payload);
   }
 
   list(role?: Role) {

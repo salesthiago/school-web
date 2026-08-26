@@ -61,7 +61,7 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () =>
-          import('./student/profile/profile.component').then((m) => m.ProfileComponent),
+          import('./shared/pages/profile.component').then((m) => m.ProfileComponent),
       },
       {
         path: 'meus-cursos',
@@ -117,6 +117,11 @@ export const routes: Routes = [
           import('./shared/pages/role-users.component').then((m) => m.RoleUsersComponent),
         data: { role: 'student', title: 'Alunos matriculados', readOnly: true },
       },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./shared/pages/profile.component').then((m) => m.ProfileComponent),
+      },
     ],
   },
 
@@ -162,23 +167,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./shared/pages/module-detail.component').then((m) => m.ModuleDetailComponent),
       },
-      { path: 'payments', component: ComingSoonComponent, data: { title: 'Pagamentos' } },
       {
         path: 'reports',
         loadComponent: () =>
           import('./admin/reports/reports.component').then((m) => m.AdminReportsComponent),
       },
       {
-        path: 'settings',
+        path: 'configuracoes',
         loadComponent: () =>
-          import('./admin/branding/branding.component').then((m) => m.BrandingComponent),
+          import('./admin/configuracoes/configuracoes.component').then(
+            (m) => m.ConfiguracoesComponent,
+          ),
       },
       {
-        path: 'video-settings',
+        path: 'profile',
         loadComponent: () =>
-          import('./admin/video-settings/video-settings.component').then(
-            (m) => m.VideoSettingsComponent,
-          ),
+          import('./shared/pages/profile.component').then((m) => m.ProfileComponent),
       },
     ],
   },

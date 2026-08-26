@@ -4,15 +4,19 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { AttemptResult, ExamQuestion, ExamsService } from '../../core/services/exams.service';
 import { CompletionService } from '../../core/services/completion.service';
+import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
+import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
+import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
 
 @Component({
   selector: 'app-exam-take',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, DashboardShellComponent, BottomNavComponent],
   templateUrl: './exam-take.component.html',
   styleUrl: './exam-take.component.scss',
 })
 export class ExamTakeComponent implements OnInit {
+  navItems = STUDENT_NAV_ITEMS;
   examId = '';
   questions = signal<ExamQuestion[]>([]);
   answers = new Map<string, Set<number>>();

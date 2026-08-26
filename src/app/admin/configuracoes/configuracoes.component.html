@@ -1,0 +1,267 @@
+<app-dashboard-shell [navItems]="navItems">
+  <div class="page-head">
+    <h1 class="page-title">Configurações</h1>
+  </div>
+
+  <nav class="content-tabs">
+    <button type="button" [class.active]="activeTab() === 'identidade'" (click)="setTab('identidade')">
+      Identidade Visual
+    </button>
+    <button type="button" [class.active]="activeTab() === 'bunny'" (click)="setTab('bunny')">
+      Integração Bunny
+    </button>
+    <button type="button" [class.active]="activeTab() === 'pagamento'" (click)="setTab('pagamento')">
+      Integração Pagamento
+    </button>
+    <button type="button" [class.active]="activeTab() === 'certificado'" (click)="setTab('certificado')">
+      Template Certificado
+    </button>
+  </nav>
+
+  <div class="tab-panel">
+    @switch (activeTab()) {
+      @case ('identidade') {
+        @if (brandingLoading()) {
+          <p class="hint">Carregando...</p>
+        } @else {
+          <form [formGroup]="brandingForm" (ngSubmit)="submitBranding()" class="entity-form">
+            <h2>Dados gerais</h2>
+
+            <div class="form-grid">
+              <label>
+                Nome da instituição
+                <input type="text" formControlName="name" placeholder="GPschool" />
+              </label>
+
+              <label>
+                Cor Principal
+                <input type="color" formControlName="primaryColor" />
+              </label>
+
+              <label>
+                Cor Secundária
+                <input type="color" formControlName="secondaryColor" />
+              </label>
+
+              <label>
+                Endereço
+                <input type="text" formControlName="address" placeholder="Rua, número, cidade" />
+              </label>
+
+              <label>
+                Telefone
+                <input type="text" formControlName="phone" placeholder="(00) 00000-0000" />
+              </label>
+
+              <label>
+                E-mail de contato
+                <input type="email" formControlName="email" placeholder="contato@escola.com" />
+              </label>
+
+              <label>
+                Site
+                <input type="text" formControlName="website" placeholder="https://" />
+              </label>
+            </div>
+
+            @if (brandingError()) {
+              <p class="error">{{ brandingError() }}</p>
+            }
+            @if (brandingSuccess()) {
+              <p class="success">{{ brandingSuccess() }}</p>
+            }
+
+            <div class="form-actions">
+              <button type="submit" class="primary-btn" [disabled]="brandingForm.invalid || brandingSaving()">
+                {{ brandingSaving() ? 'Salvando...' : 'Salvar configurações' }}
+              </button>
+            </div>
+          </form>
+
+          <div class="entity-form">
+            <h2>Logo da escola</h2>
+            <p class="hint">Exibida no topo das telas de login e cadastro.</p>
+            <div class="image-row">
+              @if (institution()?.logoUrl) {
+                <img class="preview preview-logo" [src]="institution()!.logoUrl" alt="Logo" />
+              } @else {
+                <span class="preview-empty">Sem logo</span>
+              }
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onImageSelected('logo', $event)"
+                [disabled]="uploadingImage() === 'logo'"
+              />
+              @if (uploadingImage() === 'logo') {
+                <span class="hint">Enviando...</span>
+              }
+            </div>
+          </div>
+
+          <div class="entity-form">
+            <h2>Imagem de fundo — Login</h2>
+            <div class="image-row">
+              @if (institution()?.loginBackgroundUrl) {
+                <img class="preview" [src]="institution()!.loginBackgroundUrl" alt="Fundo do login" />
+              } @else {
+                <span class="preview-empty">Sem imagem</span>
+              }
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onImageSelected('loginBackground', $event)"
+                [disabled]="uploadingImage() === 'loginBackground'"
+              />
+              @if (uploadingImage() === 'loginBackground') {
+                <span class="hint">Enviando...</span>
+              }
+            </div>
+          </div>
+
+          <div class="entity-form">
+            <h2>Banner — Tela de cadastro</h2>
+            <div class="image-row">
+              @if (institution()?.registerBackgroundUrl) {
+                <img class="preview" [src]="institution()!.registerBackgroundUrl" alt="Fundo do cadastro" />
+              } @else {
+                <span class="preview-empty">Sem imagem</span>
+              }
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onImageSelected('registerBackground', $event)"
+                [disabled]="uploadingImage() === 'registerBackground'"
+              />
+              @if (uploadingImage() === 'registerBackground') {
+                <span class="hint">Enviando...</span>
+              }
+            </div>
+          </div>
+
+          <div class="entity-form">
+            <h2>Banner de destaque — Home do aluno</h2>
+            <div class="image-row">
+              @if (institution()?.studentBannerUrl) {
+                <img class="preview" [src]="institution()!.studentBannerUrl" alt="Banner de destaque" />
+              } @else {
+                <span class="preview-empty">Sem imagem</span>
+              }
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onImageSelected('studentBanner', $event)"
+                [disabled]="uploadingImage() === 'studentBanner'"
+              />
+              @if (uploadingImage() === 'studentBanner') {
+                <span class="hint">Enviando...</span>
+              }
+            </div>
+          </div>
+        }
+      }
+
+      @case ('bunny') {
+        @if (bunnyLoading()) {
+          <p class="hint">Carregando...</p>
+        } @else {
+          <form [formGroup]="bunnyForm" (ngSubmit)="submitBunny()" class="entity-form">
+            <h2>Bunny.net</h2>
+            <p class="hint">
+              Configure as credenciais usadas para enviar os vídeos das aulas ao Bunny.net. Apenas
+              administradores podem visualizar e alterar esta configuração.
+            </p>
+
+            <div class="form-grid">
+              <label>
+                Library ID
+                <input type="text" formControlName="libraryId" placeholder="123456" />
+              </label>
+
+              <label>
+                Pull Zone Hostname
+                <input type="text" formControlName="pullZoneHostname" placeholder="minhazona.b-cdn.net" />
+              </label>
+
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="enabled" />
+                Integração ativa
+              </label>
+            </div>
+
+            <label>
+              API Key
+              <input
+                type="password"
+                formControlName="apiKey"
+                [placeholder]="apiKeyConfigured() ? '•••••••• (deixe em branco para manter a atual)' : 'Chave de API do Bunny Stream'"
+              />
+              @if (apiKeyConfigured()) {
+                <span class="hint">Uma chave já está configurada.</span>
+              }
+            </label>
+
+            @if (bunnyError()) {
+              <p class="error">{{ bunnyError() }}</p>
+            }
+            @if (bunnySuccess()) {
+              <p class="success">{{ bunnySuccess() }}</p>
+            }
+
+            <div class="form-actions">
+              <button type="submit" class="primary-btn" [disabled]="bunnyForm.invalid || bunnySaving()">
+                {{ bunnySaving() ? 'Salvando...' : 'Salvar configurações' }}
+              </button>
+            </div>
+          </form>
+        }
+      }
+
+      @case ('pagamento') {
+        <div class="entity-form">
+          <h2>Integração de pagamento</h2>
+          <p class="hint">
+            A configuração do gateway de pagamento ainda não está disponível nesta tela. Em breve
+            será possível cadastrar aqui as credenciais do provedor de pagamento.
+          </p>
+        </div>
+      }
+
+      @case ('certificado') {
+        @if (brandingLoading()) {
+          <p class="hint">Carregando...</p>
+        } @else {
+          <div class="entity-form">
+            <h2>Template do certificado</h2>
+            <p class="hint">
+              Envie uma imagem (paisagem, tamanho A4) para ser usada como fundo dos certificados
+              gerados para os alunos.
+            </p>
+            <div class="image-row">
+              @if (institution()?.certificateTemplateUrl) {
+                <img class="preview" [src]="institution()!.certificateTemplateUrl" alt="Template do certificado" />
+              } @else {
+                <span class="preview-empty">Sem template</span>
+              }
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onCertTemplateSelected($event)"
+                [disabled]="certUploading()"
+              />
+              @if (certUploading()) {
+                <span class="hint">Enviando...</span>
+              }
+            </div>
+            @if (certError()) {
+              <p class="error">{{ certError() }}</p>
+            }
+            @if (certSuccess()) {
+              <p class="success">{{ certSuccess() }}</p>
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+</app-dashboard-shell>

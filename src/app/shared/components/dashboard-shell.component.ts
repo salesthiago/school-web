@@ -8,6 +8,7 @@ import { Institution } from '../../core/models/academic.model';
 import { AppNotification } from '../../core/models/notification.model';
 import { ROLE_LABELS } from '../../core/models/user.model';
 import { IconComponent, IconName } from './icon.component';
+import { StudentProgressWidgetComponent } from './student-progress-widget.component';
 
 export interface ShellNavItem {
   label: string;
@@ -19,7 +20,7 @@ export interface ShellNavItem {
 @Component({
   selector: 'app-dashboard-shell',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, IconComponent],
+  imports: [CommonModule, RouterLink, RouterLinkActive, IconComponent, StudentProgressWidgetComponent],
   templateUrl: './dashboard-shell.component.html',
   styleUrl: './dashboard-shell.component.scss',
 })

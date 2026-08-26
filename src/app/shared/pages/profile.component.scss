@@ -1,0 +1,307 @@
+@use '../styles/admin-page' as *;
+
+.page-subtitle {
+  margin: 0.25rem 0 0;
+  color: $muted;
+  font-size: 0.88rem;
+}
+
+// ---------- Hero ----------
+.hero-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin: 1.25rem 0;
+}
+
+@media (min-width: 760px) {
+  .hero-card {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: center;
+  }
+}
+
+.hero-identity {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $accent;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  strong {
+    font-size: 1.15rem;
+    color: $ink;
+  }
+
+  .email,
+  .member-since {
+    font-size: 0.85rem;
+    color: $muted;
+  }
+
+  .role-badge {
+    align-self: flex-start;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    background: #eef0ff;
+    color: $accent-dark;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+}
+
+.bio-card {
+  background: #f4f6fb;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  blockquote {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #445;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .secondary-btn {
+    align-self: flex-start;
+  }
+}
+
+.bio-textarea {
+  width: 100%;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 0.7rem;
+  font-size: 0.88rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.bio-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+// ---------- Grid principal ----------
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .profile-grid {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+.main-col h2,
+.side-col h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  color: $ink;
+}
+
+.side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// ---------- Segurança ----------
+.security-row,
+.quick-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.75rem;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  background: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  margin-top: 0.5rem;
+
+  strong {
+    display: block;
+    font-size: 0.9rem;
+    color: $ink;
+  }
+
+  .hint {
+    display: block;
+    margin-top: 0.1rem;
+  }
+
+  .chevron {
+    color: $muted;
+    font-size: 1.1rem;
+  }
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    color: #445;
+  }
+
+  input {
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid $border;
+    font-size: 0.9rem;
+  }
+}
+
+// ---------- Preferências (toggle) ----------
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid $border;
+
+  &:first-of-type {
+    border-top: none;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.88rem;
+    color: $ink;
+  }
+
+  .hint {
+    display: block;
+    margin-top: 0.1rem;
+  }
+}
+
+.toggle {
+  position: relative;
+  flex-shrink: 0;
+
+  &.saving {
+    opacity: 0.6;
+  }
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 40px;
+    height: 22px;
+    margin: 0;
+    cursor: pointer;
+  }
+}
+
+.toggle-track {
+  display: block;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: #d5d9e5;
+  transition: background 0.15s;
+}
+
+.toggle-thumb {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 2px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+
+.toggle input:checked ~ .toggle-track {
+  background: $accent;
+}
+
+.toggle input:checked ~ .toggle-track .toggle-thumb {
+  transform: translateX(18px);
+}
+
+// ---------- Sair ----------
+.logout-btn {
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid #f0c4c4;
+  color: #c62828;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #fdecea;
+  }
+}
