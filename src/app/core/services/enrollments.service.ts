@@ -16,6 +16,12 @@ export class EnrollmentsService {
     return this.http.post<Enrollment>(`${environment.apiUrl}/enrollments/enroll`, target);
   }
 
+  lessonProgress(lessonId: string) {
+    return this.http.get<{ watchedSeconds: number; percentage: number; completed: boolean }>(
+      `${environment.apiUrl}/progress/lesson/${lessonId}`,
+    );
+  }
+
   moduleProgress(moduleId: string) {
     return this.http.get<ModuleProgressSummary>(`${environment.apiUrl}/progress/module/${moduleId}`);
   }

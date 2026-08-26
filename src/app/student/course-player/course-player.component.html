@@ -46,7 +46,7 @@
             @switch (activeTab()) {
               @case ('sobre') {
                 @if (lesson.description) {
-                  <p class="description">{{ lesson.description }}</p>
+                  <div class="description" [innerHTML]="safeHtml(lesson.description)"></div>
                 } @else {
                   <p class="hint">Sem descrição para esta aula.</p>
                 }
@@ -165,7 +165,7 @@
                 <p class="hint">Professor(a): {{ name }}</p>
               }
               @if (c.description) {
-                <p class="description">{{ c.description }}</p>
+                <div class="description" [innerHTML]="safeHtml(c.description)"></div>
               }
             }
           }

@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
 import { forkJoin, of, switchMap } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
 import { LessonsService } from '../../core/services/lessons.service';
@@ -30,6 +30,7 @@ const PROGRESS_SYNC_INTERVAL_MS = 10000;
 
 interface PlayerJsPlayer {
   on(event: string, callback: (data: unknown) => void): void;
+  setCurrentTime(seconds: number): void;
 }
 declare global {
   interface Window {
@@ -146,6 +147,8 @@ export class CoursePlayerComponent implements OnInit {
   private lastSyncedAt = 0;
   private lastKnownSeconds = 0;
   private currentLessonDuration = 0;
+  /** Segundo salvo da última sessão — usado pra retomar o vídeo em vez de sempre começar do zero. */
+  private resumeSeconds = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -230,11 +233,13 @@ export class CoursePlayerComponent implements OnInit {
 
   private onLessonSelected(lesson: Lesson) {
     this.activeTab.set('sobre');
+    this.resumeSeconds = 0;
     this.attachmentsService.listByLesson(lesson.id).subscribe((attachments) => this.attachments.set(attachments));
     this.examsService.listByLesson(lesson.id).subscribe((exams) => {
       const exam = exams[0];
       this.lessonExam.set(exam ? { id: exam.id, title: exam.title } : null);
     });
+    this.enrollmentsService.lessonProgress(lesson.id).subscribe((p) => (this.resumeSeconds = p.watchedSeconds));
     this.loadNote(lesson.id);
   }
 
@@ -306,7 +311,13 @@ export class CoursePlayerComponent implements OnInit {
         const player = new PlayerCtor(iframeEl);
         console.debug('[player-progress] player.js anexado, aguardando eventos do iframe');
 
-        player.on('ready', () => console.debug('[player-progress] evento "ready" recebido'));
+        player.on('ready', () => {
+          console.debug('[player-progress] evento "ready" recebido');
+          if (this.resumeSeconds > 5) {
+            console.debug('[player-progress] retomando em', this.resumeSeconds, 's');
+            player.setCurrentTime(this.resumeSeconds);
+          }
+        });
 
         player.on('timeupdate', (raw) => {
           if (!gotFirstTimeupdate) {
@@ -412,6 +423,11 @@ export class CoursePlayerComponent implements OnInit {
     const lesson = this.currentLesson();
     if (!lesson) return;
     this.syncProgress(lesson.video?.durationSeconds ?? 0);
+  }
+
+  /** Descrições de aula/curso vêm do editor Quill do professor (HTML), não texto puro. */
+  safeHtml(html: string | undefined): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html ?? '');
   }
 
   teacherName(): string {
