@@ -6,7 +6,7 @@ import { forkJoin, of, switchMap } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
 import { LessonsService } from '../../core/services/lessons.service';
 import { AttachmentsService } from '../../core/services/attachments.service';
-import { ExamsService } from '../../core/services/exams.service';
+import { ExamSummary, ExamsService } from '../../core/services/exams.service';
 import { NotesService } from '../../core/services/notes.service';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
 import { CompletionService } from '../../core/services/completion.service';
@@ -85,6 +85,8 @@ export class CoursePlayerComponent implements OnInit {
   progress = signal<ModuleProgressSummary | null>(null);
   attachments = signal<Attachment[]>([]);
   lessonExam = signal<{ id: string; title: string } | null>(null);
+  /** Prova final do módulo (ou do curso, na trilha avulsa) — escopo diferente da prova por aula. */
+  finalExam = signal<ExamSummary | null>(null);
 
   activeTab = signal<ContentTab>('sobre');
   sidebarTab = signal<SidebarTab>('conteudo');
@@ -179,6 +181,7 @@ export class CoursePlayerComponent implements OnInit {
           this.loadLooseLessons(this.courseId);
           this.refreshCourseTrackProgress(this.courseId);
           this.loadCourseContext(this.courseId);
+          this.loadFinalExam(this.courseId, 'course');
           return of(null);
         }),
       )
@@ -189,7 +192,14 @@ export class CoursePlayerComponent implements OnInit {
         this.loadModuleLessons(module.id);
         this.refreshModuleProgress(module.id);
         this.loadCourseContext(module.courseId);
+        this.loadFinalExam(module.id, 'module');
       });
+  }
+
+  /** Prova de escopo módulo/curso — separada da prova por aula (`lessonExam`), buscada por escopo pois nunca aparece via `listByLesson`. */
+  private loadFinalExam(id: string, scope: 'module' | 'course') {
+    const request = scope === 'module' ? this.examsService.listByModule(id) : this.examsService.listByCourseScope(id);
+    request.subscribe((exams) => this.finalExam.set(exams[0] ?? null));
   }
 
   private loadCourseContext(courseId: string) {
@@ -449,5 +459,25 @@ export class CoursePlayerComponent implements OnInit {
   formatDate(iso: string | undefined): string {
     if (!iso) return '—';
     return new Date(iso).toLocaleDateString('pt-BR');
+  }
+
+  formatFileSize(bytes: number | undefined): string {
+    if (!bytes) return '—';
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 1) return `${mb.toFixed(1)} MB`;
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
+  videoStatusLabel(status: string | undefined): string {
+    switch (status) {
+      case 'ready':
+        return 'Pronto';
+      case 'processing':
+        return 'Processando';
+      case 'error':
+        return 'Erro no processamento';
+      default:
+        return '—';
+    }
   }
 }

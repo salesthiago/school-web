@@ -1,0 +1,78 @@
+<app-dashboard-shell
+  [navItems]="navItems"
+  profileLink="/student/profile"
+  searchLink="/student/explorar"
+  searchPlaceholder="Buscar cursos, módulos, aulas..."
+  mobileSubtitle="Seus cursos matriculados"
+>
+  <div class="page-head">
+    <h1 class="page-title">Meus cursos</h1>
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Carregando seus cursos...</p>
+  } @else {
+    @if (inProgress().length === 0 && completed().length === 0) {
+      <p class="hint">
+        Você ainda não está matriculado em nenhum curso.
+        <a routerLink="/student/explorar">Explorar cursos</a>
+      </p>
+    }
+
+    @if (inProgress().length > 0) {
+      <section class="course-section">
+        <div class="section-head">
+          <h2>Em andamento</h2>
+        </div>
+        <div class="card-grid">
+          @for (item of inProgress(); track item.key) {
+            <a class="course-card" [routerLink]="item.continueLink">
+              <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+                @if (item.course.coverImageUrl) {
+                  <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+                } @else {
+                  <span>{{ initial(item.course.title) }}</span>
+                }
+              </div>
+              <div class="card-body">
+                <strong>{{ item.course.title }}</strong>
+                <span>{{ item.subtitle }}</span>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="item.progress.percentage"></div>
+                </div>
+                <span class="percentage">{{ item.progress.percentage }}%</span>
+              </div>
+            </a>
+          }
+        </div>
+      </section>
+    }
+
+    @if (completed().length > 0) {
+      <section class="course-section">
+        <div class="section-head">
+          <h2>Concluídos</h2>
+        </div>
+        <div class="card-grid">
+          @for (item of completed(); track item.key) {
+            <a class="course-card" [routerLink]="item.continueLink">
+              <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+                @if (item.course.coverImageUrl) {
+                  <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+                } @else {
+                  <span>{{ initial(item.course.title) }}</span>
+                }
+              </div>
+              <div class="card-body">
+                <strong>{{ item.course.title }}</strong>
+                <span>{{ item.subtitle }}</span>
+                <span class="percentage">Concluído</span>
+              </div>
+            </a>
+          }
+        </div>
+      </section>
+    }
+  }
+</app-dashboard-shell>
+<app-bottom-nav />

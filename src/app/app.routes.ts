@@ -63,8 +63,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./student/profile/profile.component').then((m) => m.ProfileComponent),
       },
-      { path: 'meus-cursos', component: ComingSoonComponent, data: { title: 'Meus cursos' } },
-      { path: 'explorar', component: ComingSoonComponent, data: { title: 'Explorar cursos' } },
+      {
+        path: 'meus-cursos',
+        loadComponent: () =>
+          import('./student/my-courses/my-courses.component').then((m) => m.MyCoursesComponent),
+      },
+      {
+        path: 'explorar',
+        loadComponent: () =>
+          import('./student/explore/explore.component').then((m) => m.ExploreComponent),
+      },
       { path: 'wishlist', component: ComingSoonComponent, data: { title: 'Wishlist' } },
       { path: 'historico', component: ComingSoonComponent, data: { title: 'Histórico' } },
       {

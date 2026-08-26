@@ -105,18 +105,37 @@
             }
           </div>
 
-          @if (lessonExam(); as exam) {
-            <section class="activity-card">
-              <h3>Atividades</h3>
-              <div class="activity-row">
-                <div>
-                  <strong>{{ exam.title }}</strong>
-                  <span>Teste seus conhecimentos sobre esta aula.</span>
-                </div>
-                <a class="btn-primary" [routerLink]="['/student/exams', exam.id]">Iniciar</a>
-              </div>
+          <div class="quick-cards">
+            <section class="quick-card">
+              <h3>Materiais da aula</h3>
+              @if (attachments().length === 0) {
+                <p class="hint">Nenhum material nesta aula.</p>
+              } @else {
+                @for (attachment of attachments(); track attachment.id) {
+                  <a class="attachment-row" [href]="attachment.url" target="_blank" rel="noopener">
+                    <span class="attachment-name">
+                      {{ attachment.fileName }}
+                      <span class="file-size">{{ formatFileSize(attachment.sizeBytes) }}</span>
+                    </span>
+                    <span class="download-label">Baixar</span>
+                  </a>
+                }
+              }
             </section>
-          }
+
+            @if (lessonExam(); as exam) {
+              <section class="quick-card">
+                <h3>Atividades</h3>
+                <div class="activity-row">
+                  <div>
+                    <strong>{{ exam.title }}</strong>
+                    <span>Teste seus conhecimentos sobre esta aula.</span>
+                  </div>
+                  <a class="btn-primary" [routerLink]="['/student/exams', exam.id]">Iniciar</a>
+                </div>
+              </section>
+            }
+          </div>
         </div>
 
         <aside class="side-col">
@@ -159,13 +178,28 @@
               </div>
             }
           } @else {
-            @if (course(); as c) {
-              <h3>{{ c.title }}</h3>
-              @if (teacherName(); as name) {
-                <p class="hint">Professor(a): {{ name }}</p>
-              }
-              @if (c.description) {
-                <div class="description" [innerHTML]="safeHtml(c.description)"></div>
+            @if (currentLesson(); as lesson) {
+              <h3>Informações do vídeo</h3>
+              @if (lesson.video; as video) {
+                @if (video.thumbnailUrl) {
+                  <img class="video-thumb" [src]="video.thumbnailUrl" [alt]="lesson.title" />
+                }
+                <div class="meta-grid">
+                  <div class="meta-item">
+                    <span class="meta-label">Status</span>
+                    <span>{{ videoStatusLabel(video.status) }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Duração</span>
+                    <span>{{ formatDuration(video.durationSeconds) }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Provedor</span>
+                    <span>{{ video.provider }}</span>
+                  </div>
+                </div>
+              } @else {
+                <p class="hint">Vídeo ainda não processado para esta aula.</p>
               }
             }
           }
@@ -179,9 +213,18 @@
               </div>
               <span class="hint">{{ p.completedLessons }} de {{ p.totalMandatoryLessons }} aulas concluídas</span>
               @if (p.examPassed !== null) {
-                <span class="hint">
-                  Prova final ({{ p.examWeightPercent }}% do progresso): {{ p.examPassed ? 'aprovado ✓' : 'pendente' }}
-                </span>
+                <div class="final-exam-row">
+                  <span class="hint">Prova final ({{ p.examWeightPercent }}% do progresso)</span>
+                  @if (p.examPassed) {
+                    <span class="exam-status passed">Aprovado ✓</span>
+                  } @else {
+                    @if (finalExam(); as exam) {
+                      <a class="btn-primary" [routerLink]="['/student/exams', exam.id]">Fazer prova final</a>
+                    } @else {
+                      <span class="exam-status pending">Pendente</span>
+                    }
+                  }
+                </div>
               }
               @if (p.percentage >= 100) {
                 <a class="btn-primary" routerLink="/student/certificates">Ver certificado</a>

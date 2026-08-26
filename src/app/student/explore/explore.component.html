@@ -1,0 +1,54 @@
+<app-dashboard-shell
+  [navItems]="navItems"
+  profileLink="/student/profile"
+  searchLink="/student/explorar"
+  searchPlaceholder="Buscar cursos, módulos, aulas..."
+  mobileSubtitle="Encontre seu próximo curso"
+>
+  <div class="page-head">
+    <h1 class="page-title">Explorar cursos</h1>
+  </div>
+
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="Buscar por título do curso..."
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+    />
+  </div>
+
+  @if (loading()) {
+    <p class="hint">Carregando cursos...</p>
+  } @else {
+    <div class="card-grid">
+      @for (item of filtered(); track item.course.id) {
+        <a class="course-card" [routerLink]="['/student/cursos', item.course.id]">
+          <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+            @if (item.course.coverImageUrl) {
+              <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+            } @else {
+              <span>{{ initial(item.course.title) }}</span>
+            }
+            @if (item.enrolled) {
+              <span class="badge">Matriculado</span>
+            }
+          </div>
+          <div class="card-body">
+            <strong>{{ item.course.title }}</strong>
+            @if (item.teacherName) {
+              <span>Prof. {{ item.teacherName }}</span>
+            }
+            @if (item.priceLabel) {
+              <span class="price">{{ item.priceLabel }}</span>
+            }
+          </div>
+        </a>
+      }
+      @if (filtered().length === 0) {
+        <p class="hint">Nenhum curso encontrado.</p>
+      }
+    </div>
+  }
+</app-dashboard-shell>
+<app-bottom-nav />
