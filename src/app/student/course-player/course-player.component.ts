@@ -294,14 +294,25 @@ export class CoursePlayerComponent implements OnInit {
     this.lastSyncedAt = 0;
     this.lastKnownSeconds = 0;
     this.currentLessonDuration = 0;
+    let gotFirstTimeupdate = false;
 
     loadPlayerJs()
       .then(() => {
         const PlayerCtor = window.playerjs?.Player;
-        if (!PlayerCtor) return;
+        if (!PlayerCtor) {
+          console.warn('[player-progress] script carregou mas window.playerjs.Player não existe');
+          return;
+        }
         const player = new PlayerCtor(iframeEl);
+        console.debug('[player-progress] player.js anexado, aguardando eventos do iframe');
+
+        player.on('ready', () => console.debug('[player-progress] evento "ready" recebido'));
 
         player.on('timeupdate', (raw) => {
+          if (!gotFirstTimeupdate) {
+            gotFirstTimeupdate = true;
+            console.debug('[player-progress] primeiro "timeupdate" recebido', raw);
+          }
           const data = (typeof raw === 'string' ? JSON.parse(raw) : raw) as
             | { seconds?: number; duration?: number }
             | undefined;
@@ -321,9 +332,10 @@ export class CoursePlayerComponent implements OnInit {
           this.syncProgress(this.currentLessonDuration || this.lastKnownSeconds);
         });
       })
-      .catch(() => {
+      .catch((err) => {
         // Sem player.js (bloqueado, rede etc.) o rastreio automático fica desligado; o botão
         // "Marcar como concluída" continua funcionando normalmente.
+        console.warn('[player-progress] falha ao carregar/anexar player.js', err);
       });
   }
 
@@ -331,12 +343,16 @@ export class CoursePlayerComponent implements OnInit {
     const lesson = this.currentLesson();
     if (!lesson || seconds <= 0) return;
     const module = this.module();
-    this.enrollmentsService.recordProgress(lesson.id, Math.round(seconds), module?.id).subscribe(() => {
-      if (module) {
-        this.refreshModuleProgress(module.id);
-      } else {
-        this.refreshCourseTrackProgress(this.courseId);
-      }
+    console.debug('[player-progress] enviando progresso', { lessonId: lesson.id, seconds: Math.round(seconds) });
+    this.enrollmentsService.recordProgress(lesson.id, Math.round(seconds), module?.id).subscribe({
+      next: () => {
+        if (module) {
+          this.refreshModuleProgress(module.id);
+        } else {
+          this.refreshCourseTrackProgress(this.courseId);
+        }
+      },
+      error: (err) => console.warn('[player-progress] falha ao registrar progresso', err),
     });
   }
 

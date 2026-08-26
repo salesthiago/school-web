@@ -15,8 +15,7 @@
               <iframe
                 #videoIframe
                 [src]="url"
-                allow="autoplay; fullscreen"
-                allowfullscreen
+                allow="autoplay; fullscreen; picture-in-picture"
                 loading="lazy"
                 (load)="attachPlayer(videoIframe)"
               ></iframe>
