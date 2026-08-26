@@ -11,6 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { Attachment, Course, CourseModule, Lesson } from '../../core/models/academic.model';
 import { DashboardShellComponent } from '../components/dashboard-shell.component';
 import { IconButtonComponent } from '../components/icon-button.component';
+import { ExamManagerComponent } from '../components/exam-manager.component';
 import { ADMIN_NAV_ITEMS, TEACHER_NAV_ITEMS } from '../nav-items';
 
 const VIDEO_POLL_INTERVAL_MS = 8000;
@@ -29,6 +30,7 @@ type ModuleDeleteChoice = 'move-none' | 'move-module' | 'delete-all';
     QuillEditorComponent,
     DashboardShellComponent,
     IconButtonComponent,
+    ExamManagerComponent,
   ],
   templateUrl: './course-detail.component.html',
   styleUrl: './course-detail.component.scss',
@@ -66,6 +68,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   videoUploadProgress = signal(0);
 
   expandedLessonId = signal<string | null>(null);
+  expandedQuizLessonId = signal<string | null>(null);
   attachmentsByLesson = signal<Record<string, Attachment[]>>({});
   uploadingAttachmentFor = signal<string | null>(null);
 
@@ -497,6 +500,10 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
 
   attachmentsFor(lessonId: string): Attachment[] {
     return this.attachmentsByLesson()[lessonId] ?? [];
+  }
+
+  toggleQuiz(lesson: Lesson) {
+    this.expandedQuizLessonId.set(this.expandedQuizLessonId() === lesson.id ? null : lesson.id);
   }
 
   onAttachmentSelected(lesson: Lesson, event: Event) {

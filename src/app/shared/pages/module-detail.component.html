@@ -71,6 +71,8 @@
       </form>
     </section>
 
+    <app-exam-manager scope="module" [targetId]="moduleId" />
+
     <div class="page-head">
       <h2 class="page-title">Aulas</h2>
       <app-icon-button icon="add" label="Nova aula" [showLabel]="true" variant="primary" (pressed)="openLessonCreate()" />
@@ -163,6 +165,7 @@
                 <app-icon-button icon="videocam_off" label="Remover vídeo" variant="danger" (pressed)="removeVideo(lesson)" />
               }
               <app-icon-button icon="attach_file" label="Anexos" (pressed)="toggleAttachments(lesson)" />
+              <app-icon-button icon="quiz" label="Atividade" (pressed)="toggleQuiz(lesson)" />
               <app-icon-button icon="link_off" label="Tirar do módulo" (pressed)="removeFromModule(lesson)" />
               <app-icon-button icon="edit" label="Editar" (pressed)="openLessonEdit(lesson)" />
               <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="removeLesson(lesson)" />
@@ -190,6 +193,12 @@
                   (change)="onAttachmentSelected(lesson, $event)"
                 />
               </label>
+            </div>
+          }
+
+          @if (expandedQuizLessonId() === lesson.id) {
+            <div class="attachments-panel">
+              <app-exam-manager scope="lesson" [targetId]="lesson.id" />
             </div>
           }
         </div>

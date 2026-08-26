@@ -1,0 +1,135 @@
+<div class="exam-manager">
+  @if (loading()) {
+    <p class="hint">Carregando prova...</p>
+  } @else {
+    <form [formGroup]="examForm" (ngSubmit)="saveExam()" class="entity-form">
+      <h2>{{ scopeLabel() }}</h2>
+
+      <div class="form-grid">
+        <label>
+          Título
+          <input type="text" formControlName="title" placeholder="Ex.: Quiz da aula 1" />
+        </label>
+
+        <label>
+          Nota mínima (%)
+          <input type="number" min="0" max="100" formControlName="minScorePercent" />
+        </label>
+
+        <label>
+          Tentativas permitidas
+          <input type="number" min="1" formControlName="maxAttempts" />
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="allowRetake" />
+          Permitir repetir após esgotar tentativas
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="showCorrectAnswers" />
+          Mostrar respostas corretas ao aluno
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="immediateResult" />
+          Mostrar resultado imediatamente
+        </label>
+
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="published" />
+          Publicada
+        </label>
+      </div>
+
+      @if (examError()) {
+        <p class="error">{{ examError() }}</p>
+      }
+
+      <div class="form-actions">
+        @if (exam()) {
+          <button type="button" class="secondary-btn danger" (click)="deleteExam()">Excluir prova</button>
+        }
+        <button type="submit" class="primary-btn" [disabled]="examForm.invalid || examSaving()">
+          {{ examSaving() ? 'Salvando...' : exam() ? 'Salvar alterações' : 'Criar prova' }}
+        </button>
+      </div>
+    </form>
+
+    @if (exam(); as e) {
+      <div class="questions-head">
+        <h3>Questões</h3>
+        <app-icon-button icon="add" label="Nova questão" [showLabel]="true" variant="primary" (pressed)="openQuestionCreate()" />
+      </div>
+
+      @if (questionFormOpen()) {
+        <form [formGroup]="questionForm" (ngSubmit)="saveQuestion()" class="entity-form">
+          <h2>{{ editingQuestion() ? 'Editar questão' : 'Nova questão' }}</h2>
+
+          <label>
+            Enunciado
+            <input type="text" formControlName="text" placeholder="Digite a pergunta" />
+          </label>
+
+          <label>
+            Tipo
+            <select formControlName="type">
+              <option value="single">Escolha única</option>
+              <option value="multiple">Múltipla escolha</option>
+            </select>
+          </label>
+
+          <div class="options-list" formArrayName="options">
+            @for (option of optionControls; track $index) {
+              <div class="option-row" [formGroupName]="$index">
+                <input type="checkbox" formControlName="correct" title="Opção correta" />
+                <input type="text" formControlName="text" placeholder="Texto da opção" class="option-text" />
+                <app-icon-button
+                  icon="close"
+                  label="Remover opção"
+                  variant="danger"
+                  [disabled]="optionControls.length <= 2"
+                  (pressed)="removeOption($index)"
+                />
+              </div>
+            }
+          </div>
+          <button type="button" class="secondary-btn" (click)="addOption()">+ Adicionar opção</button>
+
+          @if (questionError()) {
+            <p class="error">{{ questionError() }}</p>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="secondary-btn" (click)="closeQuestionForm()">Cancelar</button>
+            <button type="submit" class="primary-btn" [disabled]="questionForm.invalid || questionSaving()">
+              {{ questionSaving() ? 'Salvando...' : 'Salvar questão' }}
+            </button>
+          </div>
+        </form>
+      }
+
+      <div class="question-list">
+        @for (question of questions(); track question.id) {
+          <div class="question-card">
+            <div class="question-row">
+              <strong>{{ question.text }}</strong>
+              <div class="question-actions">
+                <app-icon-button icon="edit" label="Editar" (pressed)="openQuestionEdit(question)" />
+                <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="deleteQuestion(question)" />
+              </div>
+            </div>
+            <ul class="option-summary">
+              @for (option of question.options; track $index) {
+                <li [class.correct]="option.correct">{{ option.text }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (questions().length === 0) {
+          <p class="hint">Nenhuma questão cadastrada ainda.</p>
+        }
+      </div>
+    }
+  }
+</div>

@@ -11,6 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { Attachment, CourseModule, Lesson } from '../../core/models/academic.model';
 import { DashboardShellComponent } from '../components/dashboard-shell.component';
 import { IconButtonComponent } from '../components/icon-button.component';
+import { ExamManagerComponent } from '../components/exam-manager.component';
 import { ADMIN_NAV_ITEMS, TEACHER_NAV_ITEMS } from '../nav-items';
 
 const VIDEO_POLL_INTERVAL_MS = 8000;
@@ -26,6 +27,7 @@ const VIDEO_POLL_MAX_ATTEMPTS = 100; // ~13min; depois disso, revisitar a págin
     QuillEditorComponent,
     DashboardShellComponent,
     IconButtonComponent,
+    ExamManagerComponent,
   ],
   templateUrl: './module-detail.component.html',
   styleUrl: './module-detail.component.scss',
@@ -53,6 +55,7 @@ export class ModuleDetailComponent implements OnInit, OnDestroy {
   expandedLessonId = signal<string | null>(null);
   attachmentsByLesson = signal<Record<string, Attachment[]>>({});
   uploadingAttachmentFor = signal<string | null>(null);
+  expandedQuizLessonId = signal<string | null>(null);
 
   private fb = inject(FormBuilder);
   private pollingSubs = new Map<string, Subscription>();
@@ -294,6 +297,10 @@ export class ModuleDetailComponent implements OnInit, OnDestroy {
 
   attachmentsFor(lessonId: string): Attachment[] {
     return this.attachmentsByLesson()[lessonId] ?? [];
+  }
+
+  toggleQuiz(lesson: Lesson) {
+    this.expandedQuizLessonId.set(this.expandedQuizLessonId() === lesson.id ? null : lesson.id);
   }
 
   onAttachmentSelected(lesson: Lesson, event: Event) {
