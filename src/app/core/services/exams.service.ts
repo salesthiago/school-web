@@ -31,6 +31,12 @@ export class ExamsService {
     });
   }
 
+  listByLesson(lessonId: string) {
+    return this.http.get<{ id: string; title: string }[]>(`${environment.apiUrl}/exams`, {
+      params: { lessonId },
+    });
+  }
+
   getQuestions(examId: string) {
     return this.http.get<ExamQuestion[]>(`${environment.apiUrl}/exams/${examId}/questions`);
   }

@@ -61,6 +61,7 @@ export interface Lesson {
   order: number;
   mandatory: boolean;
   published: boolean;
+  createdAt?: string;
 }
 
 export interface Attachment {
@@ -85,6 +86,16 @@ export interface ModuleProgressSummary {
   completedLessons: number;
   percentage: number;
   nextLessonId: string | null;
+  completedLessonIds: string[];
+}
+
+export function enrollmentModuleId(e: Enrollment): string | null {
+  if (!e.moduleId) return null;
+  return typeof e.moduleId === 'string' ? e.moduleId : e.moduleId.id;
+}
+
+export function enrollmentCourseId(e: Enrollment): string {
+  return typeof e.courseId === 'string' ? e.courseId : e.courseId.id;
 }
 
 export interface Certificate {

@@ -1,16 +1,37 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { of, switchMap } from 'rxjs';
+import { forkJoin, of, switchMap } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
 import { LessonsService } from '../../core/services/lessons.service';
 import { AttachmentsService } from '../../core/services/attachments.service';
+import { ExamsService } from '../../core/services/exams.service';
+import { NotesService } from '../../core/services/notes.service';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
-import { Attachment, CourseModule, Lesson, ModuleProgressSummary } from '../../core/models/academic.model';
+import {
+  Attachment,
+  Course,
+  CourseModule,
+  Lesson,
+  ModuleProgressSummary,
+  enrollmentCourseId,
+  enrollmentModuleId,
+} from '../../core/models/academic.model';
 import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
+
+type ContentTab = 'sobre' | 'materiais' | 'anotacoes' | 'perguntas';
+type SidebarTab = 'conteudo' | 'resumo';
+
+interface SidebarSection {
+  key: string; // moduleId, ou 'loose' pra trilha de aulas avulsas
+  title: string;
+  workloadHours?: number;
+  enrolled: boolean;
+  isCurrent: boolean;
+}
 
 @Component({
   selector: 'app-course-player',
@@ -22,21 +43,72 @@ import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
 export class CoursePlayerComponent implements OnInit {
   navItems = STUDENT_NAV_ITEMS;
 
+  course = signal<Course | null>(null);
   /** Nulo quando o player está tocando uma aula avulsa (sem módulo). */
   module = signal<CourseModule | null>(null);
-  /** Preenchido só no modo "aula avulsa" — usado pra registrar progresso/marcar como assistida. */
-  private courseId: string | null = null;
+  private courseId = '';
 
   lessons = signal<Lesson[]>([]);
   currentLesson = signal<Lesson | null>(null);
   progress = signal<ModuleProgressSummary | null>(null);
   attachments = signal<Attachment[]>([]);
+  lessonExam = signal<{ id: string; title: string } | null>(null);
+
+  activeTab = signal<ContentTab>('sobre');
+  sidebarTab = signal<SidebarTab>('conteudo');
+
+  noteText = signal('');
+  noteLoading = signal(false);
+  noteSaving = signal(false);
+  noteSavedAt = signal<Date | null>(null);
+
+  allModules = signal<CourseModule[]>([]);
+  enrolledModuleIds = signal<Set<string>>(new Set());
+  courseTrackEnrolled = signal(false);
+  hasLooseTrack = signal(false);
+
+  sidebarSections = computed<SidebarSection[]>(() => {
+    const sections: SidebarSection[] = this.allModules().map((m) => ({
+      key: m.id,
+      title: m.title,
+      workloadHours: m.workloadHours,
+      enrolled: this.enrolledModuleIds().has(m.id),
+      isCurrent: this.module()?.id === m.id,
+    }));
+    if (this.hasLooseTrack()) {
+      sections.push({
+        key: 'loose',
+        title: 'Aulas avulsas',
+        enrolled: this.courseTrackEnrolled(),
+        isCurrent: !this.module(),
+      });
+    }
+    return sections;
+  });
+
+  statusLabel = computed(() => {
+    const p = this.progress();
+    if (!p || p.percentage === 0) return 'Não iniciado';
+    if (p.percentage >= 100) return 'Concluído';
+    return 'Em andamento';
+  });
+
+  hasNextLesson = computed(() => {
+    const current = this.currentLesson();
+    const list = this.lessons();
+    if (!current) return false;
+    const idx = list.findIndex((l) => l.id === current.id);
+    return idx >= 0 && idx < list.length - 1;
+  });
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private coursesService: CoursesService,
     private lessonsService: LessonsService,
     private attachmentsService: AttachmentsService,
+    private examsService: ExamsService,
+    private notesService: NotesService,
     private enrollmentsService: EnrollmentsService,
     private sanitizer: DomSanitizer,
   ) {}
@@ -51,26 +123,51 @@ export class CoursePlayerComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           const moduleId = params.get('moduleId');
-          const courseId = params.get('courseId');
+          const paramCourseId = params.get('courseId');
 
           if (moduleId) {
-            this.courseId = null;
             return this.coursesService.getModule(moduleId);
           }
 
-          this.courseId = courseId;
+          this.courseId = paramCourseId!;
           this.module.set(null);
-          this.loadLooseLessons(courseId!);
-          this.refreshCourseTrackProgress(courseId!);
+          this.loadLooseLessons(this.courseId);
+          this.refreshCourseTrackProgress(this.courseId);
+          this.loadCourseContext(this.courseId);
           return of(null);
         }),
       )
       .subscribe((module) => {
         if (!module) return;
         this.module.set(module);
+        this.courseId = module.courseId;
         this.loadModuleLessons(module.id);
         this.refreshModuleProgress(module.id);
+        this.loadCourseContext(module.courseId);
       });
+  }
+
+  private loadCourseContext(courseId: string) {
+    this.coursesService.getCourse(courseId).subscribe((course) => this.course.set(course));
+    this.coursesService
+      .listModules(courseId)
+      .subscribe((modules) => this.allModules.set(modules.filter((m) => m.published)));
+    this.enrollmentsService.myEnrollments().subscribe((enrollments) => {
+      const active = enrollments.filter((e) => e.status === 'active' && enrollmentCourseId(e) === courseId);
+      this.enrolledModuleIds.set(
+        new Set(active.map(enrollmentModuleId).filter((id): id is string => !!id)),
+      );
+      this.courseTrackEnrolled.set(active.some((e) => enrollmentModuleId(e) === null));
+    });
+    // Só existe trilha de aulas avulsas se essa chamada não vier vazia (matriculado) ou 403 (existe, mas não comprou ainda).
+    if (this.module()) {
+      this.lessonsService.listByCourse(courseId).subscribe({
+        next: (lessons) => this.hasLooseTrack.set(lessons.length > 0),
+        error: (err) => this.hasLooseTrack.set(err?.status === 403),
+      });
+    } else {
+      this.hasLooseTrack.set(true);
+    }
   }
 
   private loadModuleLessons(moduleId: string) {
@@ -86,11 +183,42 @@ export class CoursePlayerComponent implements OnInit {
     const lessonId = this.route.snapshot.paramMap.get('lessonId');
     const selected = lessons.find((l) => l.id === lessonId) ?? lessons[0] ?? null;
     this.currentLesson.set(selected);
-    if (selected) this.loadAttachments(selected.id);
+    if (selected) this.onLessonSelected(selected);
   }
 
-  private loadAttachments(lessonId: string) {
-    this.attachmentsService.listByLesson(lessonId).subscribe((attachments) => this.attachments.set(attachments));
+  private onLessonSelected(lesson: Lesson) {
+    this.activeTab.set('sobre');
+    this.attachmentsService.listByLesson(lesson.id).subscribe((attachments) => this.attachments.set(attachments));
+    this.examsService.listByLesson(lesson.id).subscribe((exams) => {
+      const exam = exams[0];
+      this.lessonExam.set(exam ? { id: exam.id, title: exam.title } : null);
+    });
+    this.loadNote(lesson.id);
+  }
+
+  private loadNote(lessonId: string) {
+    this.noteLoading.set(true);
+    this.noteSavedAt.set(null);
+    this.notesService.getForLesson(lessonId).subscribe({
+      next: (note) => {
+        this.noteText.set(note.text);
+        this.noteLoading.set(false);
+      },
+      error: () => this.noteLoading.set(false),
+    });
+  }
+
+  saveNote() {
+    const lesson = this.currentLesson();
+    if (!lesson) return;
+    this.noteSaving.set(true);
+    this.notesService.save(lesson.id, this.noteText()).subscribe({
+      next: () => {
+        this.noteSaving.set(false);
+        this.noteSavedAt.set(new Date());
+      },
+      error: () => this.noteSaving.set(false),
+    });
   }
 
   private refreshModuleProgress(moduleId: string) {
@@ -101,9 +229,56 @@ export class CoursePlayerComponent implements OnInit {
     this.enrollmentsService.courseTrackProgress(courseId).subscribe((p) => this.progress.set(p));
   }
 
+  setTab(tab: ContentTab) {
+    this.activeTab.set(tab);
+  }
+
+  setSidebarTab(tab: SidebarTab) {
+    this.sidebarTab.set(tab);
+  }
+
+  isLessonCompleted(lessonId: string): boolean {
+    return this.progress()?.completedLessonIds?.includes(lessonId) ?? false;
+  }
+
   selectLesson(lesson: Lesson) {
     this.currentLesson.set(lesson);
-    this.loadAttachments(lesson.id);
+    this.onLessonSelected(lesson);
+  }
+
+  nextLesson() {
+    const current = this.currentLesson();
+    const list = this.lessons();
+    if (!current) return;
+    const idx = list.findIndex((l) => l.id === current.id);
+    if (idx >= 0 && idx < list.length - 1) {
+      this.selectLesson(list[idx + 1]);
+    }
+  }
+
+  goToSection(section: SidebarSection) {
+    if (section.isCurrent) return;
+    if (!section.enrolled) {
+      this.router.navigate(['/student/cursos', this.courseId]);
+      return;
+    }
+    if (section.key === 'loose') {
+      forkJoin({
+        lessons: this.lessonsService.listByCourse(this.courseId),
+        progress: this.enrollmentsService.courseTrackProgress(this.courseId),
+      }).subscribe(({ lessons, progress }) => {
+        const lessonId = progress.nextLessonId ?? lessons[0]?.id;
+        if (lessonId) this.router.navigate(['/student/course-player/curso', this.courseId, lessonId]);
+      });
+    } else {
+      forkJoin({
+        lessons: this.coursesService.listLessons(section.key),
+        progress: this.enrollmentsService.moduleProgress(section.key),
+      }).subscribe(({ lessons, progress }) => {
+        const lessonId = progress.nextLessonId ?? lessons[0]?.id;
+        if (lessonId) this.router.navigate(['/student/course-player', section.key, lessonId]);
+      });
+    }
   }
 
   markWatched() {
@@ -116,9 +291,30 @@ export class CoursePlayerComponent implements OnInit {
       .subscribe(() => {
         if (module) {
           this.refreshModuleProgress(module.id);
-        } else if (this.courseId) {
+        } else {
           this.refreshCourseTrackProgress(this.courseId);
         }
       });
+  }
+
+  teacherName(): string {
+    const teacher = this.course()?.teacherId as unknown;
+    if (teacher && typeof teacher === 'object' && 'name' in teacher) {
+      return (teacher as { name: string }).name;
+    }
+    return '';
+  }
+
+  formatDuration(seconds: number | undefined): string {
+    if (!seconds) return '—';
+    const minutes = Math.round(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    return hours > 0 ? `${hours}h ${rest}min` : `${minutes} min`;
+  }
+
+  formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('pt-BR');
   }
 }
