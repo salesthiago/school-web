@@ -5,17 +5,23 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { of, switchMap } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
 import { LessonsService } from '../../core/services/lessons.service';
+import { AttachmentsService } from '../../core/services/attachments.service';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
-import { CourseModule, Lesson, ModuleProgressSummary } from '../../core/models/academic.model';
+import { Attachment, CourseModule, Lesson, ModuleProgressSummary } from '../../core/models/academic.model';
+import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
+import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
+import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
 
 @Component({
   selector: 'app-course-player',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, DashboardShellComponent, BottomNavComponent],
   templateUrl: './course-player.component.html',
   styleUrl: './course-player.component.scss',
 })
 export class CoursePlayerComponent implements OnInit {
+  navItems = STUDENT_NAV_ITEMS;
+
   /** Nulo quando o player está tocando uma aula avulsa (sem módulo). */
   module = signal<CourseModule | null>(null);
   /** Preenchido só no modo "aula avulsa" — usado pra registrar progresso/marcar como assistida. */
@@ -24,11 +30,13 @@ export class CoursePlayerComponent implements OnInit {
   lessons = signal<Lesson[]>([]);
   currentLesson = signal<Lesson | null>(null);
   progress = signal<ModuleProgressSummary | null>(null);
+  attachments = signal<Attachment[]>([]);
 
   constructor(
     private route: ActivatedRoute,
     private coursesService: CoursesService,
     private lessonsService: LessonsService,
+    private attachmentsService: AttachmentsService,
     private enrollmentsService: EnrollmentsService,
     private sanitizer: DomSanitizer,
   ) {}
@@ -78,6 +86,11 @@ export class CoursePlayerComponent implements OnInit {
     const lessonId = this.route.snapshot.paramMap.get('lessonId');
     const selected = lessons.find((l) => l.id === lessonId) ?? lessons[0] ?? null;
     this.currentLesson.set(selected);
+    if (selected) this.loadAttachments(selected.id);
+  }
+
+  private loadAttachments(lessonId: string) {
+    this.attachmentsService.listByLesson(lessonId).subscribe((attachments) => this.attachments.set(attachments));
   }
 
   private refreshModuleProgress(moduleId: string) {
@@ -90,6 +103,7 @@ export class CoursePlayerComponent implements OnInit {
 
   selectLesson(lesson: Lesson) {
     this.currentLesson.set(lesson);
+    this.loadAttachments(lesson.id);
   }
 
   markWatched() {

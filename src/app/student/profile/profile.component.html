@@ -1,4 +1,5 @@
-<div class="profile-screen">
+<app-dashboard-shell [navItems]="navItems">
+  <div class="profile-screen">
   <a class="back-link" routerLink="/student">← Voltar</a>
   <h1>Meu perfil</h1>
 
@@ -53,5 +54,6 @@
   }
 
   <button class="logout-btn" (click)="logout()">Sair</button>
-</div>
+  </div>
+</app-dashboard-shell>
 <app-bottom-nav />

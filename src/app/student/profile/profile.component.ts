@@ -5,15 +5,18 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { UsersService } from '../../core/services/users.service';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
+import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
+import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
 
 @Component({
   selector: 'app-student-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, BottomNavComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, BottomNavComponent, DashboardShellComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })
 export class ProfileComponent {
+  navItems = STUDENT_NAV_ITEMS;
   private fb = inject(FormBuilder);
   private usersService = inject(UsersService);
 

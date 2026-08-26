@@ -1,39 +1,54 @@
-<div class="player-screen">
-  @if (currentLesson(); as lesson) {
-    <div class="video-wrap">
-      @if (lesson.video?.playbackUrl; as playbackUrl) {
-        <iframe [src]="embedUrl(playbackUrl)" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-      } @else {
-        <div class="no-video">Vídeo ainda não disponível para esta aula.</div>
-      }
-    </div>
+<app-dashboard-shell [navItems]="navItems">
+  <div class="player-screen">
+    @if (currentLesson(); as lesson) {
+      <div class="video-wrap">
+        @if (lesson.video?.playbackUrl; as playbackUrl) {
+          <iframe [src]="embedUrl(playbackUrl)" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+        } @else {
+          <div class="no-video">Vídeo ainda não disponível para esta aula.</div>
+        }
+      </div>
 
-    <div class="lesson-info">
-      <h1>{{ lesson.title }}</h1>
-      @if (progress(); as p) {
-        <p class="progress-label">{{ p.percentage }}% concluído</p>
-      }
-      @if (lesson.description) {
-        <p class="description">{{ lesson.description }}</p>
-      }
-      <button class="mark-btn" (click)="markWatched()">Marcar como assistida</button>
-    </div>
-  } @else {
-    <p class="hint">Carregando aula...</p>
-  }
+      <div class="lesson-info">
+        <h1>{{ lesson.title }}</h1>
+        @if (progress(); as p) {
+          <p class="progress-label">{{ p.percentage }}% concluído</p>
+        }
+        @if (lesson.description) {
+          <p class="description">{{ lesson.description }}</p>
+        }
+        <button class="mark-btn" (click)="markWatched()">Marcar como assistida</button>
+      </div>
 
-  <section class="lesson-list">
-    <h3>{{ module() ? 'Aulas do módulo' : 'Aulas do curso' }}</h3>
-    @for (lesson of lessons(); track lesson.id) {
-      <button
-        class="lesson-row"
-        [class.active]="currentLesson()?.id === lesson.id"
-        (click)="selectLesson(lesson)"
-      >
-        <span>{{ lesson.order + 1 }}. {{ lesson.title }}</span>
-      </button>
+      @if (attachments().length > 0) {
+        <section class="attachments-section">
+          <h3>Materiais da aula</h3>
+          @for (attachment of attachments(); track attachment.id) {
+            <a class="attachment-row" [href]="attachment.url" target="_blank" rel="noopener">
+              <span>{{ attachment.fileName }}</span>
+              <span class="download-label">Baixar</span>
+            </a>
+          }
+        </section>
+      }
+    } @else {
+      <p class="hint">Carregando aula...</p>
     }
-  </section>
 
-  <a class="back-link" routerLink="/student">← Voltar ao painel</a>
-</div>
+    <section class="lesson-list">
+      <h3>{{ module() ? 'Aulas do módulo' : 'Aulas do curso' }}</h3>
+      @for (lesson of lessons(); track lesson.id) {
+        <button
+          class="lesson-row"
+          [class.active]="currentLesson()?.id === lesson.id"
+          (click)="selectLesson(lesson)"
+        >
+          <span>{{ lesson.order + 1 }}. {{ lesson.title }}</span>
+        </button>
+      }
+    </section>
+
+    <a class="back-link" routerLink="/student">← Voltar ao painel</a>
+  </div>
+</app-dashboard-shell>
+<app-bottom-nav />
