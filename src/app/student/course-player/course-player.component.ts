@@ -9,6 +9,7 @@ import { AttachmentsService } from '../../core/services/attachments.service';
 import { ExamsService } from '../../core/services/exams.service';
 import { NotesService } from '../../core/services/notes.service';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
+import { CompletionService } from '../../core/services/completion.service';
 import {
   Attachment,
   Course,
@@ -24,6 +25,36 @@ import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
 
 type ContentTab = 'sobre' | 'materiais' | 'anotacoes' | 'perguntas';
 type SidebarTab = 'conteudo' | 'resumo';
+
+const PROGRESS_SYNC_INTERVAL_MS = 10000;
+
+interface PlayerJsPlayer {
+  on(event: string, callback: (data: unknown) => void): void;
+}
+declare global {
+  interface Window {
+    playerjs?: { Player: new (target: HTMLIFrameElement) => PlayerJsPlayer };
+  }
+}
+
+/**
+ * Carrega o player.js do Bunny (protocolo postMessage padrão da indústria, usado pelo embed do
+ * Bunny Stream) uma única vez por sessão de página — usado pra saber o segundo real do vídeo e
+ * mandar progresso incremental, em vez de só no clique manual "Marcar como concluída".
+ */
+let playerJsLoadPromise: Promise<void> | null = null;
+function loadPlayerJs(): Promise<void> {
+  if (window.playerjs) return Promise.resolve();
+  if (playerJsLoadPromise) return playerJsLoadPromise;
+  playerJsLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = '//assets.mediadelivery.net/playerjs/playerjs-latest.min.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Falha ao carregar player.js'));
+    document.head.appendChild(script);
+  });
+  return playerJsLoadPromise;
+}
 
 interface SidebarSection {
   key: string; // moduleId, ou 'loose' pra trilha de aulas avulsas
@@ -101,6 +132,21 @@ export class CoursePlayerComponent implements OnInit {
     return idx >= 0 && idx < list.length - 1;
   });
 
+  /**
+   * Memoizado por aula: `bypassSecurityTrustResourceUrl` cria um objeto novo a cada chamada, e
+   * chamar isso direto no template (`[src]="embedUrl(...)"`) recalculava a cada ciclo de change
+   * detection (ex.: clicar numa aba) — trocando a referência do `[src]` do iframe e reiniciando o
+   * vídeo do zero. `computed()` só reavalia quando `currentLesson()` muda de fato.
+   */
+  videoUrl = computed<SafeResourceUrl | null>(() => {
+    const playbackUrl = this.currentLesson()?.video?.playbackUrl;
+    return playbackUrl ? this.sanitizer.bypassSecurityTrustResourceUrl(playbackUrl) : null;
+  });
+
+  private lastSyncedAt = 0;
+  private lastKnownSeconds = 0;
+  private currentLessonDuration = 0;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -110,13 +156,9 @@ export class CoursePlayerComponent implements OnInit {
     private examsService: ExamsService,
     private notesService: NotesService,
     private enrollmentsService: EnrollmentsService,
+    private completionService: CompletionService,
     private sanitizer: DomSanitizer,
   ) {}
-
-  /** playbackUrl vem do nosso backend (iframe.mediadelivery.net do Bunny), não de entrada do usuário. */
-  embedUrl(playbackUrl: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(playbackUrl);
-  }
 
   ngOnInit() {
     this.route.paramMap
@@ -222,11 +264,80 @@ export class CoursePlayerComponent implements OnInit {
   }
 
   private refreshModuleProgress(moduleId: string) {
-    this.enrollmentsService.moduleProgress(moduleId).subscribe((p) => this.progress.set(p));
+    this.enrollmentsService.moduleProgress(moduleId).subscribe((p) => {
+      this.progress.set(p);
+      if (p.percentage >= 100) {
+        this.completionService.checkModule(moduleId).subscribe(() => {
+          this.completionService.checkCourseFull(this.courseId).subscribe();
+        });
+      }
+    });
   }
 
   private refreshCourseTrackProgress(courseId: string) {
-    this.enrollmentsService.courseTrackProgress(courseId).subscribe((p) => this.progress.set(p));
+    this.enrollmentsService.courseTrackProgress(courseId).subscribe((p) => {
+      this.progress.set(p);
+      if (p.percentage >= 100) {
+        this.completionService.checkCourseTrack(courseId).subscribe(() => {
+          this.completionService.checkCourseFull(courseId).subscribe();
+        });
+      }
+    });
+  }
+
+  /**
+   * Instancia o player.js contra o iframe recém-criado (chamado pelo (load) do template — um
+   * iframe novo por troca de aula, já que `videoUrl()` só muda quando a aula muda). Sem isso,
+   * a única forma de progresso era o clique manual "Marcar como concluída".
+   */
+  attachPlayer(iframeEl: HTMLIFrameElement) {
+    this.lastSyncedAt = 0;
+    this.lastKnownSeconds = 0;
+    this.currentLessonDuration = 0;
+
+    loadPlayerJs()
+      .then(() => {
+        const PlayerCtor = window.playerjs?.Player;
+        if (!PlayerCtor) return;
+        const player = new PlayerCtor(iframeEl);
+
+        player.on('timeupdate', (raw) => {
+          const data = (typeof raw === 'string' ? JSON.parse(raw) : raw) as
+            | { seconds?: number; duration?: number }
+            | undefined;
+          if (typeof data?.seconds !== 'number') return;
+          this.lastKnownSeconds = data.seconds;
+          if (typeof data.duration === 'number' && data.duration > 0) {
+            this.currentLessonDuration = data.duration;
+          }
+          const now = Date.now();
+          if (now - this.lastSyncedAt >= PROGRESS_SYNC_INTERVAL_MS) {
+            this.lastSyncedAt = now;
+            this.syncProgress(this.lastKnownSeconds);
+          }
+        });
+
+        player.on('ended', () => {
+          this.syncProgress(this.currentLessonDuration || this.lastKnownSeconds);
+        });
+      })
+      .catch(() => {
+        // Sem player.js (bloqueado, rede etc.) o rastreio automático fica desligado; o botão
+        // "Marcar como concluída" continua funcionando normalmente.
+      });
+  }
+
+  private syncProgress(seconds: number) {
+    const lesson = this.currentLesson();
+    if (!lesson || seconds <= 0) return;
+    const module = this.module();
+    this.enrollmentsService.recordProgress(lesson.id, Math.round(seconds), module?.id).subscribe(() => {
+      if (module) {
+        this.refreshModuleProgress(module.id);
+      } else {
+        this.refreshCourseTrackProgress(this.courseId);
+      }
+    });
   }
 
   setTab(tab: ContentTab) {
@@ -284,17 +395,7 @@ export class CoursePlayerComponent implements OnInit {
   markWatched() {
     const lesson = this.currentLesson();
     if (!lesson) return;
-    const module = this.module();
-
-    this.enrollmentsService
-      .recordProgress(lesson.id, lesson.video?.durationSeconds ?? 0, module?.id)
-      .subscribe(() => {
-        if (module) {
-          this.refreshModuleProgress(module.id);
-        } else {
-          this.refreshCourseTrackProgress(this.courseId);
-        }
-      });
+    this.syncProgress(lesson.video?.durationSeconds ?? 0);
   }
 
   teacherName(): string {

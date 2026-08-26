@@ -382,10 +382,11 @@
       <app-exam-manager scope="course" [targetId]="id" />
 
       <section class="entity-form">
-        <h2>Preço das aulas avulsas</h2>
+        <h2>Preço e progresso</h2>
         <p class="hint">
-          Vale só para as aulas soltas do curso (sem módulo). Cada módulo tem seu próprio preço,
-          configurado nele.
+          O preço vale só para as aulas soltas do curso (sem módulo) — cada módulo tem seu
+          próprio preço, configurado nele. O peso da prova se aplica em qualquer lugar do curso
+          que tenha uma prova vinculada (módulo, trilha avulsa ou prova final do curso).
         </p>
 
         <form [formGroup]="pricingForm" (ngSubmit)="submitPricing()">
@@ -401,6 +402,11 @@
                 <input type="number" min="0" step="0.01" formControlName="bundlePrice" />
               </label>
             }
+
+            <label>
+              Peso da prova final na % de progresso
+              <input type="number" min="0" max="100" formControlName="examWeightPercent" />
+            </label>
           </div>
 
           @if (pricingError()) {

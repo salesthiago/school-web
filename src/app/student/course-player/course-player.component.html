@@ -11,8 +11,15 @@
           </div>
 
           <div class="video-wrap">
-            @if (lesson.video?.playbackUrl; as playbackUrl) {
-              <iframe [src]="embedUrl(playbackUrl)" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
+            @if (videoUrl(); as url) {
+              <iframe
+                #videoIframe
+                [src]="url"
+                allow="autoplay; fullscreen"
+                allowfullscreen
+                loading="lazy"
+                (load)="attachPlayer(videoIframe)"
+              ></iframe>
             } @else {
               <div class="no-video">Vídeo ainda não disponível para esta aula.</div>
             }
@@ -172,6 +179,11 @@
                 <div class="progress-fill" [style.width.%]="p.percentage"></div>
               </div>
               <span class="hint">{{ p.completedLessons }} de {{ p.totalMandatoryLessons }} aulas concluídas</span>
+              @if (p.examPassed !== null) {
+                <span class="hint">
+                  Prova final ({{ p.examWeightPercent }}% do progresso): {{ p.examPassed ? 'aprovado ✓' : 'pendente' }}
+                </span>
+              }
               @if (p.percentage >= 100) {
                 <a class="btn-primary" routerLink="/student/certificates">Ver certificado</a>
               }

@@ -25,6 +25,8 @@ export interface Course {
   /** Trilha de aulas avulsas gratuita — ver bundlePrice. */
   free?: boolean;
   completionThresholdPercent?: number;
+  /** Peso (%) da prova final na % de progresso mostrada ao aluno — 0 desliga o peso. */
+  examWeightPercent?: number;
 }
 
 export interface CourseModule {
@@ -87,6 +89,8 @@ export interface ModuleProgressSummary {
   percentage: number;
   nextLessonId: string | null;
   completedLessonIds: string[];
+  examWeightPercent: number;
+  examPassed: boolean | null;
 }
 
 export function enrollmentModuleId(e: Enrollment): string | null {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { AttemptResult, ExamQuestion, ExamsService } from '../../core/services/exams.service';
+import { CompletionService } from '../../core/services/completion.service';
 
 @Component({
   selector: 'app-exam-take',
@@ -21,6 +22,7 @@ export class ExamTakeComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private examsService: ExamsService,
+    private completionService: CompletionService,
   ) {}
 
   ngOnInit() {
@@ -62,8 +64,21 @@ export class ExamTakeComponent implements OnInit {
       next: (result) => {
         this.result.set(result);
         this.submitting.set(false);
+        this.triggerCompletionCheck(result);
       },
       error: () => this.submitting.set(false),
     });
+  }
+
+  /** Prova de módulo/curso pode ser o último requisito faltando pro certificado — reavalia. */
+  private triggerCompletionCheck(result: AttemptResult) {
+    if (!result.passed) return;
+    if (result.scope === 'module' && result.moduleId) {
+      this.completionService.checkModule(result.moduleId).subscribe(() => {
+        this.completionService.checkCourseFull(result.courseId).subscribe();
+      });
+    } else if (result.scope === 'course') {
+      this.completionService.checkCourseFull(result.courseId).subscribe();
+    }
   }
 }

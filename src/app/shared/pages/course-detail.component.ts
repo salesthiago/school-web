@@ -90,6 +90,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   pricingForm = this.fb.nonNullable.group({
     free: [true],
     bundlePrice: [0, [Validators.min(0)]],
+    examWeightPercent: [10, [Validators.min(0), Validators.max(100)]],
   });
 
   moduleForm = this.fb.nonNullable.group({
@@ -149,6 +150,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
       this.pricingForm.reset({
         free: course.free ?? true,
         bundlePrice: course.bundlePrice ?? 0,
+        examWeightPercent: course.examWeightPercent ?? 10,
       });
       this.loading.set(false);
     });
