@@ -11,7 +11,7 @@
     <div class="lesson-info">
       <h1>{{ lesson.title }}</h1>
       @if (progress(); as p) {
-        <p class="progress-label">{{ p.percentage }}% do módulo concluído</p>
+        <p class="progress-label">{{ p.percentage }}% concluído</p>
       }
       @if (lesson.description) {
         <p class="description">{{ lesson.description }}</p>
@@ -23,7 +23,7 @@
   }
 
   <section class="lesson-list">
-    <h3>Aulas do módulo</h3>
+    <h3>{{ module() ? 'Aulas do módulo' : 'Aulas do curso' }}</h3>
     @for (lesson of lessons(); track lesson.id) {
       <button
         class="lesson-row"

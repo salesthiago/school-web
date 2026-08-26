@@ -206,7 +206,7 @@ export class ModuleDetailComponent implements OnInit, OnDestroy {
 
     const request = editing
       ? this.lessonsService.updateLesson(editing.id, value)
-      : this.lessonsService.createLesson({ ...value, moduleId: this.moduleId });
+      : this.lessonsService.createLesson({ ...value, courseId: this.courseId, moduleId: this.moduleId });
 
     request.subscribe({
       next: () => {
@@ -218,6 +218,17 @@ export class ModuleDetailComponent implements OnInit, OnDestroy {
         this.savingLesson.set(false);
         this.lessonError.set(err?.error?.message ?? 'Não foi possível salvar a aula.');
       },
+    });
+  }
+
+  removeFromModule(lesson: Lesson) {
+    const confirmed = window.confirm(
+      `Tirar "${lesson.title}" deste módulo? A aula passa a ficar avulsa, direto no curso.`,
+    );
+    if (!confirmed) return;
+    this.lessonsService.updateLesson(lesson.id, { moduleId: null }).subscribe({
+      next: () => this.lessons.update((list) => list.filter((l) => l.id !== lesson.id)),
+      error: (err) => window.alert(err?.error?.message ?? 'Não foi possível tirar a aula do módulo.'),
     });
   }
 

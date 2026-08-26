@@ -1,29 +1,40 @@
-import { Component, DestroyRef, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, interval, switchMap, takeWhile } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
+import { LessonsService } from '../../core/services/lessons.service';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
 import { PaymentsService } from '../../core/services/payments.service';
-import { Course, CourseModule } from '../../core/models/academic.model';
+import { Course, CourseModule, Enrollment } from '../../core/models/academic.model';
 import { CheckoutResponse, PaymentMethod } from '../../core/models/payment.model';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
 import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
 
-type ModuleState = 'enrolled' | 'free' | 'paid';
+type PurchasableState = 'enrolled' | 'free' | 'paid';
+type CheckoutTarget = { type: 'module'; module: CourseModule } | { type: 'course' };
 
 interface ModuleView {
   module: CourseModule;
-  state: ModuleState;
+  state: PurchasableState;
   priceLabel: string;
 }
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const POLL_INTERVAL_MS = 5000;
 const POLL_TIMEOUT_MS = 15 * 60 * 1000;
+
+function moduleIdOf(e: Enrollment): string | null {
+  if (!e.moduleId) return null;
+  return typeof e.moduleId === 'string' ? e.moduleId : e.moduleId.id;
+}
+
+function courseIdOf(e: Enrollment): string {
+  return typeof e.courseId === 'string' ? e.courseId : e.courseId.id;
+}
 
 @Component({
   selector: 'app-student-course-detail',
@@ -40,8 +51,18 @@ export class StudentCourseDetailComponent implements OnInit {
   course = signal<Course | null>(null);
   moduleViews = signal<ModuleView[]>([]);
   enrollingModuleId = signal<string | null>(null);
+  enrollingCourseTrack = signal(false);
 
-  checkoutModule = signal<CourseModule | null>(null);
+  courseTrackHasLessons = signal(false);
+  courseTrackEnrolled = signal(false);
+  courseTrackState = computed<PurchasableState>(() =>
+    this.courseTrackEnrolled() ? 'enrolled' : this.course()?.free ? 'free' : 'paid',
+  );
+  courseTrackPriceLabel = computed(() =>
+    this.course()?.free ? 'Grátis' : currencyFormatter.format(this.course()?.bundlePrice ?? 0),
+  );
+
+  checkoutTarget = signal<CheckoutTarget | null>(null);
   checkoutMethod = signal<PaymentMethod>('pix');
   checkoutLoading = signal(false);
   checkoutError = signal<string | null>(null);
@@ -55,6 +76,7 @@ export class StudentCourseDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private coursesService: CoursesService,
+    private lessonsService: LessonsService,
     private enrollmentsService: EnrollmentsService,
     private paymentsService: PaymentsService,
     private destroyRef: DestroyRef,
@@ -80,11 +102,10 @@ export class StudentCourseDetailComponent implements OnInit {
     }).subscribe({
       next: ({ course, modules, enrollments }) => {
         this.course.set(course);
-        const enrolledModuleIds = new Set(
-          enrollments
-            .filter((e) => e.status === 'active')
-            .map((e) => (e.moduleId as CourseModule).id),
-        );
+        const active = enrollments.filter((e) => e.status === 'active' && courseIdOf(e) === this.courseId);
+        const enrolledModuleIds = new Set(active.map(moduleIdOf).filter((id): id is string => !!id));
+        this.courseTrackEnrolled.set(active.some((e) => moduleIdOf(e) === null));
+
         this.moduleViews.set(
           modules
             .filter((m) => m.published)
@@ -106,6 +127,13 @@ export class StudentCourseDetailComponent implements OnInit {
         this.notFound.set(true);
         this.loading.set(false);
       },
+    });
+
+    // Metadados de aulas avulsas só ficam visíveis pra quem já está matriculado na trilha —
+    // 403 aqui não é erro de carregamento, só indica "existe trilha, mas ainda não comprou".
+    this.lessonsService.listByCourse(this.courseId).subscribe({
+      next: (lessons) => this.courseTrackHasLessons.set(lessons.length > 0),
+      error: (err) => this.courseTrackHasLessons.set(err?.status === 403),
     });
   }
 
@@ -137,9 +165,17 @@ export class StudentCourseDetailComponent implements OnInit {
     });
   }
 
+  continueCourseTrack() {
+    this.enrollmentsService.courseTrackProgress(this.courseId).subscribe((progress) => {
+      if (progress.nextLessonId) {
+        this.router.navigate(['/student/course-player/curso', this.courseId, progress.nextLessonId]);
+      }
+    });
+  }
+
   enrollFree(module: CourseModule) {
     this.enrollingModuleId.set(module.id);
-    this.enrollmentsService.enroll(module.id).subscribe({
+    this.enrollmentsService.enroll({ moduleId: module.id }).subscribe({
       next: () => {
         this.enrollingModuleId.set(null);
         this.continueModule(module.id);
@@ -148,8 +184,29 @@ export class StudentCourseDetailComponent implements OnInit {
     });
   }
 
+  enrollFreeCourseTrack() {
+    this.enrollingCourseTrack.set(true);
+    this.enrollmentsService.enroll({ courseId: this.courseId }).subscribe({
+      next: () => {
+        this.enrollingCourseTrack.set(false);
+        this.courseTrackEnrolled.set(true);
+        this.continueCourseTrack();
+      },
+      error: () => this.enrollingCourseTrack.set(false),
+    });
+  }
+
   openCheckout(module: CourseModule) {
-    this.checkoutModule.set(module);
+    this.checkoutTarget.set({ type: 'module', module });
+    this.resetCheckoutState();
+  }
+
+  openCourseTrackCheckout() {
+    this.checkoutTarget.set({ type: 'course' });
+    this.resetCheckoutState();
+  }
+
+  private resetCheckoutState() {
     this.checkoutMethod.set('pix');
     this.checkoutResult.set(null);
     this.checkoutError.set(null);
@@ -157,7 +214,7 @@ export class StudentCourseDetailComponent implements OnInit {
   }
 
   closeCheckout() {
-    this.checkoutModule.set(null);
+    this.checkoutTarget.set(null);
   }
 
   selectMethod(method: PaymentMethod) {
@@ -165,15 +222,16 @@ export class StudentCourseDetailComponent implements OnInit {
   }
 
   startCheckout() {
-    const module = this.checkoutModule();
-    if (!module) return;
+    const target = this.checkoutTarget();
+    if (!target) return;
     this.checkoutLoading.set(true);
     this.checkoutError.set(null);
-    this.paymentsService.checkout(module.id, this.checkoutMethod()).subscribe({
+    const payload = target.type === 'module' ? { moduleId: target.module.id } : { courseId: this.courseId };
+    this.paymentsService.checkout(payload, this.checkoutMethod()).subscribe({
       next: (result) => {
         this.checkoutLoading.set(false);
         this.checkoutResult.set(result);
-        this.pollForConfirmation(module.id);
+        this.pollForConfirmation(target);
       },
       error: () => {
         this.checkoutLoading.set(false);
@@ -182,11 +240,15 @@ export class StudentCourseDetailComponent implements OnInit {
     });
   }
 
-  goToPurchasedModule() {
-    const module = this.checkoutModule();
-    if (!module) return;
+  goToPurchased() {
+    const target = this.checkoutTarget();
+    if (!target) return;
     this.closeCheckout();
-    this.continueModule(module.id);
+    if (target.type === 'module') {
+      this.continueModule(target.module.id);
+    } else {
+      this.continueCourseTrack();
+    }
   }
 
   copy(text: string | undefined, field: string) {
@@ -197,7 +259,7 @@ export class StudentCourseDetailComponent implements OnInit {
     });
   }
 
-  private pollForConfirmation(moduleId: string) {
+  private pollForConfirmation(target: CheckoutTarget) {
     const deadline = Date.now() + POLL_TIMEOUT_MS;
     interval(POLL_INTERVAL_MS)
       .pipe(
@@ -206,9 +268,11 @@ export class StudentCourseDetailComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((enrollments) => {
-        const confirmed = enrollments.some(
-          (e) => e.status === 'active' && (e.moduleId as CourseModule).id === moduleId,
-        );
+        const confirmed = enrollments.some((e) => {
+          if (e.status !== 'active' || courseIdOf(e) !== this.courseId) return false;
+          const mid = moduleIdOf(e);
+          return target.type === 'module' ? mid === target.module.id : mid === null;
+        });
         if (confirmed) {
           this.paymentConfirmed.set(true);
           this.load();

@@ -61,9 +61,15 @@ export class DashboardComponent implements OnInit {
       .myEnrollments()
       .pipe(
         switchMap((enrollments) => {
-          if (!enrollments.length) return of([] as EnrollmentView[]);
-          const requests = enrollments.map((e) => {
-            const module = e.moduleId as CourseModule;
+          // Matrículas na trilha de aulas avulsas do curso (sem módulo) não entram aqui —
+          // "Continue aprendendo"/"Concluídos" seguem por módulo; a trilha avulsa aparece
+          // na própria página do curso.
+          const moduleEnrollments = enrollments.filter(
+            (e): e is typeof e & { moduleId: CourseModule } => !!e.moduleId && typeof e.moduleId === 'object',
+          );
+          if (!moduleEnrollments.length) return of([] as EnrollmentView[]);
+          const requests = moduleEnrollments.map((e) => {
+            const module = e.moduleId;
             const course = e.courseId as Course;
             return this.enrollmentsService
               .moduleProgress(module.id)

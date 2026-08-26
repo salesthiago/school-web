@@ -7,9 +7,10 @@ import { CheckoutResponse, PaymentMethod } from '../models/payment.model';
 export class PaymentsService {
   constructor(private http: HttpClient) {}
 
-  checkout(moduleId: string, paymentMethod: PaymentMethod) {
+  /** Informe moduleId (compra do módulo) OU courseId (compra da trilha de aulas avulsas). */
+  checkout(target: { moduleId?: string; courseId?: string }, paymentMethod: PaymentMethod) {
     return this.http.post<CheckoutResponse>(`${environment.apiUrl}/payments/checkout`, {
-      moduleId,
+      ...target,
       paymentMethod,
     });
   }

@@ -6,6 +6,10 @@ import { Course, CourseModule, Lesson } from '../models/academic.model';
 export interface CourseFormPayload {
   title: string;
   description?: string;
+  /** Preço da trilha de aulas avulsas do curso (aulas sem módulo). */
+  bundlePrice?: number;
+  /** Trilha de aulas avulsas gratuita — ver bundlePrice. */
+  free?: boolean;
 }
 
 export interface ModuleFormPayload {

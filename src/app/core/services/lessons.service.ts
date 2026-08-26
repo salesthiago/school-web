@@ -5,7 +5,9 @@ import { environment } from '../../../environments/environment';
 import { Lesson } from '../models/academic.model';
 
 export interface LessonFormPayload {
-  moduleId: string;
+  courseId: string;
+  /** Ausente = aula avulsa, direto no curso, sem módulo. */
+  moduleId?: string;
   title: string;
   description?: string;
   mandatory?: boolean;
@@ -29,6 +31,11 @@ export class LessonsService {
     return this.http.get<Lesson[]>(`${environment.apiUrl}/lessons`, { params: { moduleId } });
   }
 
+  /** Todas as aulas do curso (soltas + de módulo) — gestão de conteúdo, não navegação de aluno. */
+  listByCourse(courseId: string) {
+    return this.http.get<Lesson[]>(`${environment.apiUrl}/lessons`, { params: { courseId } });
+  }
+
   getLesson(id: string) {
     return this.http.get<Lesson>(`${environment.apiUrl}/lessons/${id}`);
   }
@@ -37,7 +44,13 @@ export class LessonsService {
     return this.http.post<Lesson>(`${environment.apiUrl}/lessons`, payload);
   }
 
-  updateLesson(id: string, payload: Partial<Omit<LessonFormPayload, 'moduleId'>> & { published?: boolean }) {
+  updateLesson(
+    id: string,
+    payload: Partial<Omit<LessonFormPayload, 'courseId' | 'moduleId'>> & {
+      published?: boolean;
+      moduleId?: string | null;
+    },
+  ) {
     return this.http.patch<Lesson>(`${environment.apiUrl}/lessons/${id}`, payload);
   }
 

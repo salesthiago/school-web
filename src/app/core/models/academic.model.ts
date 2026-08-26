@@ -20,6 +20,11 @@ export interface Course {
   coverImageUrl?: string;
   teacherId: string | { id: string; name: string };
   published: boolean;
+  /** Preço da trilha de aulas avulsas do curso (aulas sem módulo). */
+  bundlePrice?: number;
+  /** Trilha de aulas avulsas gratuita — ver bundlePrice. */
+  free?: boolean;
+  completionThresholdPercent?: number;
 }
 
 export interface CourseModule {
@@ -49,7 +54,9 @@ export interface Lesson {
   id: string;
   title: string;
   description?: string;
-  moduleId: string;
+  courseId: string;
+  /** Ausente quando a aula é avulsa (direto no curso, sem módulo). */
+  moduleId?: string;
   video?: VideoMeta;
   order: number;
   mandatory: boolean;
@@ -67,7 +74,8 @@ export interface Attachment {
 export interface Enrollment {
   id: string;
   studentId: string;
-  moduleId: CourseModule | string;
+  /** Ausente/null quando a matrícula é na trilha de aulas avulsas do curso, não num módulo. */
+  moduleId: CourseModule | string | null;
   courseId: Course | string;
   status: 'active' | 'revoked';
 }

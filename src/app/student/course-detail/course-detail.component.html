@@ -63,11 +63,35 @@
         </div>
       }
 
-      @if (checkoutModule(); as cm) {
+      @if (courseTrackHasLessons()) {
+        <h2>Aulas do curso</h2>
+        <div class="module-card">
+          <div class="module-info">
+            <strong>Aulas avulsas</strong>
+            <span class="meta">{{ courseTrackPriceLabel() }}</span>
+          </div>
+
+          @switch (courseTrackState()) {
+            @case ('enrolled') {
+              <button class="cta enrolled" (click)="continueCourseTrack()">Continuar</button>
+            }
+            @case ('free') {
+              <button class="cta" [disabled]="enrollingCourseTrack()" (click)="enrollFreeCourseTrack()">
+                {{ enrollingCourseTrack() ? 'Matriculando...' : 'Matricular grátis' }}
+              </button>
+            }
+            @case ('paid') {
+              <button class="cta" (click)="openCourseTrackCheckout()">Comprar — {{ courseTrackPriceLabel() }}</button>
+            }
+          }
+        </div>
+      }
+
+      @if (checkoutTarget(); as target) {
         <div class="checkout-overlay" (click)="closeCheckout()">
           <div class="checkout-panel" (click)="$event.stopPropagation()">
             <button class="close-btn" (click)="closeCheckout()">✕</button>
-            <h3>Comprar "{{ cm.title }}"</h3>
+            <h3>Comprar "{{ target.type === 'module' ? target.module.title : 'Aulas avulsas' }}"</h3>
 
             @if (!checkoutResult()) {
               <div class="method-toggle">
@@ -84,7 +108,7 @@
               </button>
             } @else if (paymentConfirmed()) {
               <p class="confirmed">✓ Pagamento confirmado!</p>
-              <button class="cta" (click)="goToPurchasedModule()">Começar agora</button>
+              <button class="cta" (click)="goToPurchased()">Começar agora</button>
             } @else {
               @if (checkoutMethod() === 'pix') {
                 <p class="hint">Pague com Pix usando o código abaixo no app do seu banco.</p>

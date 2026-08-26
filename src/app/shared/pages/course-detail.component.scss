@@ -34,6 +34,12 @@
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+
+  &.small {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+  }
 
   &.disabled {
     opacity: 0.6;
@@ -44,4 +50,193 @@
 // o editor rich text precisa de altura própria e ficar acima do form-grid
 quill-editor {
   display: block;
+}
+
+// ---------- Abas ----------
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid $border;
+  margin-bottom: 1.5rem;
+
+  button {
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    color: $muted;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+
+    &:hover {
+      color: $ink;
+    }
+
+    &.active {
+      color: $accent;
+      border-bottom-color: $accent;
+    }
+  }
+}
+
+.intro {
+  margin: 0 0 1rem;
+}
+
+.struct-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.section-title {
+  margin: 1.75rem 0 0.85rem;
+  font-size: 1rem;
+  color: $ink;
+}
+
+// ---------- Estado vazio ----------
+.empty-state {
+  background: #fff;
+  border: 1px dashed $border;
+  border-radius: 14px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+
+  p {
+    margin: 0 0 0.5rem;
+    color: $muted;
+    font-size: 0.9rem;
+
+    strong {
+      color: $ink;
+      font-size: 1rem;
+    }
+  }
+
+  .primary-btn {
+    margin-top: 0.75rem;
+  }
+}
+
+// ---------- Escolha de organização (radio) ----------
+.org-choice {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: #fafbfd;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+
+.org-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: $ink;
+  flex-basis: 100%;
+}
+
+.radio-label {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #445;
+  cursor: pointer;
+
+  input[disabled] + & {
+    opacity: 0.5;
+  }
+}
+
+.org-choice select {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid $border;
+  font-size: 0.85rem;
+}
+
+// ---------- Exclusão de módulo ----------
+.delete-panel h2 {
+  color: #c62828;
+}
+
+.primary-btn.danger {
+  background: #c62828;
+}
+
+.danger-zone {
+  border-color: #f5c6cb;
+}
+
+// ---------- Lista de aulas avulsas (mesmo padrão de module-detail) ----------
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lesson-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.lesson-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  flex-wrap: wrap;
+}
+
+.lesson-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  strong {
+    color: $ink;
+    font-size: 0.9rem;
+  }
+
+  .status-badge.processing {
+    background: #fff3e0;
+    color: #ef6c00;
+  }
+}
+
+.lesson-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.attachments-panel {
+  border-top: 1px solid $border;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #fafbfd;
+}
+
+.attachment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+
+  a {
+    color: $accent;
+    text-decoration: none;
+  }
 }

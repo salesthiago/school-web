@@ -10,6 +10,6 @@ export interface ChargeResult {
 }
 
 export interface CheckoutResponse {
-  order: { id: string; moduleId: string; courseId: string; amount: number };
+  order: { id: string; moduleId?: string; courseId: string; amount: number };
   payment: { id: string } & ChargeResult;
 }

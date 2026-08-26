@@ -2,8 +2,9 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { switchMap } from 'rxjs';
+import { of, switchMap } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
+import { LessonsService } from '../../core/services/lessons.service';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
 import { CourseModule, Lesson, ModuleProgressSummary } from '../../core/models/academic.model';
 
@@ -15,7 +16,11 @@ import { CourseModule, Lesson, ModuleProgressSummary } from '../../core/models/a
   styleUrl: './course-player.component.scss',
 })
 export class CoursePlayerComponent implements OnInit {
+  /** Nulo quando o player está tocando uma aula avulsa (sem módulo). */
   module = signal<CourseModule | null>(null);
+  /** Preenchido só no modo "aula avulsa" — usado pra registrar progresso/marcar como assistida. */
+  private courseId: string | null = null;
+
   lessons = signal<Lesson[]>([]);
   currentLesson = signal<Lesson | null>(null);
   progress = signal<ModuleProgressSummary | null>(null);
@@ -23,6 +28,7 @@ export class CoursePlayerComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private coursesService: CoursesService,
+    private lessonsService: LessonsService,
     private enrollmentsService: EnrollmentsService,
     private sanitizer: DomSanitizer,
   ) {}
@@ -36,28 +42,50 @@ export class CoursePlayerComponent implements OnInit {
     this.route.paramMap
       .pipe(
         switchMap((params) => {
-          const moduleId = params.get('moduleId')!;
-          return this.coursesService.getModule(moduleId);
+          const moduleId = params.get('moduleId');
+          const courseId = params.get('courseId');
+
+          if (moduleId) {
+            this.courseId = null;
+            return this.coursesService.getModule(moduleId);
+          }
+
+          this.courseId = courseId;
+          this.module.set(null);
+          this.loadLooseLessons(courseId!);
+          this.refreshCourseTrackProgress(courseId!);
+          return of(null);
         }),
       )
       .subscribe((module) => {
+        if (!module) return;
         this.module.set(module);
-        this.loadLessons(module.id);
-        this.refreshProgress(module.id);
+        this.loadModuleLessons(module.id);
+        this.refreshModuleProgress(module.id);
       });
   }
 
-  private loadLessons(moduleId: string) {
-    this.coursesService.listLessons(moduleId).subscribe((lessons) => {
-      this.lessons.set(lessons);
-      const lessonId = this.route.snapshot.paramMap.get('lessonId');
-      const selected = lessons.find((l) => l.id === lessonId) ?? lessons[0] ?? null;
-      this.currentLesson.set(selected);
-    });
+  private loadModuleLessons(moduleId: string) {
+    this.coursesService.listLessons(moduleId).subscribe((lessons) => this.selectLessonFromRoute(lessons));
   }
 
-  private refreshProgress(moduleId: string) {
+  private loadLooseLessons(courseId: string) {
+    this.lessonsService.listByCourse(courseId).subscribe((lessons) => this.selectLessonFromRoute(lessons));
+  }
+
+  private selectLessonFromRoute(lessons: Lesson[]) {
+    this.lessons.set(lessons);
+    const lessonId = this.route.snapshot.paramMap.get('lessonId');
+    const selected = lessons.find((l) => l.id === lessonId) ?? lessons[0] ?? null;
+    this.currentLesson.set(selected);
+  }
+
+  private refreshModuleProgress(moduleId: string) {
     this.enrollmentsService.moduleProgress(moduleId).subscribe((p) => this.progress.set(p));
+  }
+
+  private refreshCourseTrackProgress(courseId: string) {
+    this.enrollmentsService.courseTrackProgress(courseId).subscribe((p) => this.progress.set(p));
   }
 
   selectLesson(lesson: Lesson) {
@@ -66,11 +94,17 @@ export class CoursePlayerComponent implements OnInit {
 
   markWatched() {
     const lesson = this.currentLesson();
+    if (!lesson) return;
     const module = this.module();
-    if (!lesson || !module) return;
 
     this.enrollmentsService
-      .recordProgress(lesson.id, module.id, lesson.video?.durationSeconds ?? 0)
-      .subscribe(() => this.refreshProgress(module.id));
+      .recordProgress(lesson.id, lesson.video?.durationSeconds ?? 0, module?.id)
+      .subscribe(() => {
+        if (module) {
+          this.refreshModuleProgress(module.id);
+        } else if (this.courseId) {
+          this.refreshCourseTrackProgress(this.courseId);
+        }
+      });
   }
 }

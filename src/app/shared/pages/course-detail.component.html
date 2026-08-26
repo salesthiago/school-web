@@ -4,150 +4,419 @@
   @if (course(); as c) {
     <div class="page-head">
       <h1 class="page-title">{{ c.title }}</h1>
-      <app-icon-button icon="delete_outline" label="Excluir curso" [showLabel]="true" variant="danger" (pressed)="deleteCourse()" />
     </div>
 
-    <section class="entity-form">
-      <h2>Dados do curso</h2>
+    <nav class="tabs">
+      <button type="button" [class.active]="activeTab() === 'dados'" (click)="setTab('dados')">Dados do curso</button>
+      <button type="button" [class.active]="activeTab() === 'estrutura'" (click)="setTab('estrutura')">Estrutura do curso</button>
+      <button type="button" [class.active]="activeTab() === 'configuracoes'" (click)="setTab('configuracoes')">Configurações</button>
+    </nav>
 
-      <div class="cover-row">
-        <div class="cover-preview">
-          @if (c.coverImageUrl) {
-            <img [src]="c.coverImageUrl" alt="Capa do curso" />
-          } @else {
-            <span>Sem capa</span>
-          }
-        </div>
-        <label class="upload-btn" [class.disabled]="uploadingCover()">
-          {{ uploadingCover() ? 'Enviando...' : 'Alterar capa' }}
-          <input type="file" accept="image/*" hidden [disabled]="uploadingCover()" (change)="onCoverSelected($event)" />
-        </label>
-      </div>
+    <!-- ===== Dados do curso ===== -->
+    @if (activeTab() === 'dados') {
+      <section class="entity-form">
+        <h2>Dados do curso</h2>
 
-      <form [formGroup]="courseForm" (ngSubmit)="submitCourse()">
-        <div class="form-grid">
-          <label>
-            Título
-            <input type="text" formControlName="title" />
-          </label>
-
-          <label class="checkbox-label">
-            <input type="checkbox" formControlName="published" />
-            Curso publicado
+        <div class="cover-row">
+          <div class="cover-preview">
+            @if (c.coverImageUrl) {
+              <img [src]="c.coverImageUrl" alt="Capa do curso" />
+            } @else {
+              <span>Sem capa</span>
+            }
+          </div>
+          <label class="upload-btn" [class.disabled]="uploadingCover()">
+            {{ uploadingCover() ? 'Enviando...' : 'Alterar capa' }}
+            <input type="file" accept="image/*" hidden [disabled]="uploadingCover()" (change)="onCoverSelected($event)" />
           </label>
         </div>
 
-        <label>
-          Descrição
-          <quill-editor formControlName="description" format="html" theme="snow" />
-        </label>
-
-        @if (courseError()) {
-          <p class="error">{{ courseError() }}</p>
-        }
-        @if (courseSaved()) {
-          <p class="success">Curso salvo.</p>
-        }
-
-        <div class="form-actions">
-          <button type="submit" class="primary-btn" [disabled]="courseForm.invalid || savingCourse()">
-            {{ savingCourse() ? 'Salvando...' : 'Salvar curso' }}
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <div class="page-head">
-      <h2 class="page-title">Módulos</h2>
-      <app-icon-button icon="add" label="Novo módulo" [showLabel]="true" variant="primary" (pressed)="openModuleCreate()" />
-    </div>
-
-    @if (moduleFormOpen()) {
-      <form [formGroup]="moduleForm" (ngSubmit)="submitModule()" class="entity-form">
-        <h2>{{ editingModule() ? 'Editar módulo' : 'Novo módulo' }}</h2>
-
-        <div class="form-grid">
-          <label>
-            Título
-            <input type="text" formControlName="title" placeholder="Nome do módulo" />
-          </label>
-
-          <label>
-            Carga horária (h)
-            <input type="number" min="0" formControlName="workloadHours" />
-          </label>
-
-          <label class="checkbox-label">
-            <input type="checkbox" formControlName="free" />
-            Módulo gratuito
-          </label>
-
-          @if (!moduleForm.controls.free.value) {
+        <form [formGroup]="courseForm" (ngSubmit)="submitCourse()">
+          <div class="form-grid">
             <label>
-              Preço (R$)
-              <input type="number" min="0" step="0.01" formControlName="price" />
+              Título
+              <input type="text" formControlName="title" />
             </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="published" />
+              Curso publicado
+            </label>
+          </div>
+
+          <label>
+            Descrição
+            <quill-editor formControlName="description" format="html" theme="snow" />
+          </label>
+
+          @if (courseError()) {
+            <p class="error">{{ courseError() }}</p>
+          }
+          @if (courseSaved()) {
+            <p class="success">Curso salvo.</p>
           }
 
-          <label class="checkbox-label">
-            <input type="checkbox" formControlName="published" />
-            Módulo publicado
-          </label>
-        </div>
-
-        <label>
-          Descrição
-          <quill-editor formControlName="description" format="html" theme="snow" />
-        </label>
-
-        @if (moduleError()) {
-          <p class="error">{{ moduleError() }}</p>
-        }
-
-        <div class="form-actions">
-          <button type="button" class="secondary-btn" (click)="closeModuleForm()">Cancelar</button>
-          <button type="submit" class="primary-btn" [disabled]="moduleForm.invalid || savingModule()">
-            {{ savingModule() ? 'Salvando...' : 'Salvar módulo' }}
-          </button>
-        </div>
-      </form>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn" [disabled]="courseForm.invalid || savingCourse()">
+              {{ savingCourse() ? 'Salvando...' : 'Salvar curso' }}
+            </button>
+          </div>
+        </form>
+      </section>
     }
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Título</th>
-            <th>Preço</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (module of modules(); track module.id) {
-            <tr>
-              <td>{{ module.title }}</td>
-              <td>{{ priceLabel(module) }}</td>
-              <td>
-                <span class="status-badge" [class.draft]="!module.published">
-                  {{ module.published ? 'Publicado' : 'Rascunho' }}
-                </span>
-              </td>
-              <td class="actions">
-                <app-icon-button icon="menu_book" label="Aulas" (pressed)="openModule(module)" />
-                <app-icon-button icon="edit" label="Editar" (pressed)="openModuleEdit(module)" />
-                <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="removeModule(module)" />
-              </td>
-            </tr>
+    <!-- ===== Estrutura do curso ===== -->
+    @if (activeTab() === 'estrutura') {
+      <p class="hint intro">Organize as aulas e módulos que seus alunos visualizarão.</p>
+
+      <div class="page-head">
+        <div class="struct-actions">
+          <app-icon-button icon="add" label="Adicionar aula" [showLabel]="true" variant="primary" (pressed)="openLessonCreate()" />
+          <app-icon-button icon="folder" label="Novo módulo" [showLabel]="true" (pressed)="openModuleCreate()" />
+        </div>
+      </div>
+
+      @if (modules().length === 0 && lessons().length === 0) {
+        <div class="empty-state">
+          <p><strong>Seu curso ainda não possui aulas.</strong></p>
+          <p>Adicione a primeira aula. Você poderá organizá-la em módulos depois, se quiser.</p>
+          <button type="button" class="primary-btn" (click)="openLessonCreate()">+ Adicionar primeira aula</button>
+        </div>
+      }
+
+      @if (lessonFormOpen()) {
+        <form [formGroup]="lessonForm" (ngSubmit)="submitLesson()" class="entity-form">
+          <h2>{{ editingLesson() ? 'Editar aula' : 'Nova aula' }}</h2>
+
+          <div class="form-grid">
+            <label>
+              Título
+              <input type="text" formControlName="title" placeholder="Nome da aula" />
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="mandatory" />
+              Obrigatória
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="published" />
+              Publicada
+            </label>
+          </div>
+
+          <label>
+            Descrição
+            <quill-editor formControlName="description" format="html" theme="snow" />
+          </label>
+
+          <div class="org-choice">
+            <span class="org-title">Organização</span>
+            <label class="radio-label">
+              <input type="radio" name="organizeMode" formControlName="organizeMode" value="none" />
+              Sem módulo
+            </label>
+            <label class="radio-label">
+              <input
+                type="radio"
+                name="organizeMode"
+                formControlName="organizeMode"
+                value="module"
+                [disabled]="modules().length === 0"
+              />
+              Adicionar ao módulo
+            </label>
+            @if (lessonForm.controls.organizeMode.value === 'module') {
+              <select formControlName="moduleId">
+                <option value="" disabled>Selecione um módulo</option>
+                @for (m of modules(); track m.id) {
+                  <option [value]="m.id">{{ m.title }}</option>
+                }
+              </select>
+            }
+          </div>
+
+          @if (lessonError()) {
+            <p class="error">{{ lessonError() }}</p>
           }
-          @if (modules().length === 0) {
-            <tr>
-              <td colspan="4" class="hint">Nenhum módulo cadastrado ainda.</td>
-            </tr>
+
+          <div class="form-actions">
+            <button type="button" class="secondary-btn" (click)="closeLessonForm()">Cancelar</button>
+            <button
+              type="submit"
+              class="primary-btn"
+              [disabled]="lessonForm.invalid || savingLesson() || (lessonForm.controls.organizeMode.value === 'module' && !lessonForm.controls.moduleId.value)"
+            >
+              {{ savingLesson() ? 'Salvando...' : 'Salvar aula' }}
+            </button>
+          </div>
+
+          @if (editingLesson()) {
+            <p class="hint">O vídeo é enviado depois de salvar, na lista de aulas avulsas abaixo (se a aula não tiver módulo).</p>
           }
-        </tbody>
-      </table>
-    </div>
+        </form>
+      }
+
+      @if (moduleFormOpen()) {
+        <form [formGroup]="moduleForm" (ngSubmit)="submitModule()" class="entity-form">
+          <h2>{{ editingModule() ? 'Editar módulo' : 'Novo módulo' }}</h2>
+
+          <div class="form-grid">
+            <label>
+              Título
+              <input type="text" formControlName="title" placeholder="Nome do módulo" />
+            </label>
+
+            <label>
+              Carga horária (h)
+              <input type="number" min="0" formControlName="workloadHours" />
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="free" />
+              Módulo gratuito
+            </label>
+
+            @if (!moduleForm.controls.free.value) {
+              <label>
+                Preço (R$)
+                <input type="number" min="0" step="0.01" formControlName="price" />
+              </label>
+            }
+
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="published" />
+              Módulo publicado
+            </label>
+          </div>
+
+          <label>
+            Descrição
+            <quill-editor formControlName="description" format="html" theme="snow" />
+          </label>
+
+          @if (moduleError()) {
+            <p class="error">{{ moduleError() }}</p>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="secondary-btn" (click)="closeModuleForm()">Cancelar</button>
+            <button type="submit" class="primary-btn" [disabled]="moduleForm.invalid || savingModule()">
+              {{ savingModule() ? 'Salvando...' : 'Salvar módulo' }}
+            </button>
+          </div>
+        </form>
+      }
+
+      @if (moduleToDelete(); as md) {
+        <div class="entity-form delete-panel">
+          <h2>Excluir módulo "{{ md.title }}"</h2>
+          @if (lessonCountFor(md.id) > 0) {
+            <p class="hint">Este módulo tem {{ lessonCountFor(md.id) }} aula(s). O que fazer com elas?</p>
+            <div class="org-choice">
+              <label class="radio-label">
+                <input type="radio" name="moduleDeleteChoice" [checked]="moduleDeleteChoice() === 'move-none'" (change)="moduleDeleteChoice.set('move-none')" />
+                Mover as aulas para "Sem módulo"
+              </label>
+              <label class="radio-label">
+                <input
+                  type="radio"
+                  name="moduleDeleteChoice"
+                  [checked]="moduleDeleteChoice() === 'move-module'"
+                  [disabled]="otherModules().length === 0"
+                  (change)="moduleDeleteChoice.set('move-module')"
+                />
+                Mover as aulas para outro módulo
+              </label>
+              @if (moduleDeleteChoice() === 'move-module') {
+                <select [value]="moduleDeleteTarget()" (change)="moduleDeleteTarget.set($any($event.target).value)">
+                  @for (m of otherModules(); track m.id) {
+                    <option [value]="m.id">{{ m.title }}</option>
+                  }
+                </select>
+              }
+              <label class="radio-label">
+                <input type="radio" name="moduleDeleteChoice" [checked]="moduleDeleteChoice() === 'delete-all'" (change)="moduleDeleteChoice.set('delete-all')" />
+                Excluir o módulo e as aulas dele
+              </label>
+            </div>
+          } @else {
+            <p class="hint">Este módulo não tem aulas — pode excluir com segurança.</p>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="secondary-btn" (click)="closeModuleDelete()">Cancelar</button>
+            <button type="button" class="primary-btn danger" [disabled]="deletingModule()" (click)="confirmModuleDelete()">
+              {{ deletingModule() ? 'Excluindo...' : 'Confirmar exclusão' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (modules().length > 0) {
+        <h3 class="section-title">Módulos</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Aulas</th>
+                <th>Preço</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (module of modules(); track module.id) {
+                <tr>
+                  <td>{{ module.title }}</td>
+                  <td>{{ lessonCountFor(module.id) }}</td>
+                  <td>{{ priceLabel(module) }}</td>
+                  <td>
+                    <span class="status-badge" [class.draft]="!module.published">
+                      {{ module.published ? 'Publicado' : 'Rascunho' }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    <app-icon-button icon="menu_book" label="Aulas" (pressed)="openModule(module)" />
+                    <app-icon-button icon="edit" label="Editar" (pressed)="openModuleEdit(module)" />
+                    <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="openModuleDelete(module)" />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (lessons().length > 0) {
+        <h3 class="section-title">Aulas avulsas</h3>
+        @if (looseLessons().length === 0) {
+          <p class="hint">Nenhuma aula avulsa — todas as aulas deste curso estão dentro de módulos.</p>
+        }
+        <div class="lesson-list">
+          @for (lesson of looseLessons(); track lesson.id) {
+            <div class="lesson-card">
+              <div class="lesson-row">
+                <div class="lesson-info">
+                  <strong>{{ lesson.title }}</strong>
+                  <span class="status-badge" [class.draft]="!lesson.published">
+                    {{ lesson.published ? 'Publicada' : 'Rascunho' }}
+                  </span>
+                  @if (!lesson.mandatory) {
+                    <span class="status-badge inactive">Opcional</span>
+                  }
+                  @switch (lesson.video?.status) {
+                    @case ('ready') {
+                      <span class="status-badge">Vídeo pronto</span>
+                    }
+                    @case ('processing') {
+                      <span class="status-badge processing">Processando vídeo...</span>
+                    }
+                    @case ('error') {
+                      <span class="status-badge inactive">Falha no processamento</span>
+                    }
+                    @default {
+                      <span class="status-badge inactive">Sem vídeo</span>
+                    }
+                  }
+                </div>
+                <div class="lesson-actions">
+                  <label class="upload-btn small" [class.disabled]="uploadingVideoFor() === lesson.id">
+                    {{ uploadingVideoFor() === lesson.id ? 'Enviando ' + videoUploadProgress() + '%...' : 'Enviar vídeo' }}
+                    <input
+                      type="file"
+                      accept="video/*"
+                      hidden
+                      [disabled]="uploadingVideoFor() === lesson.id"
+                      (change)="onVideoSelected(lesson, $event)"
+                    />
+                  </label>
+                  @if (lesson.video) {
+                    <app-icon-button icon="videocam_off" label="Remover vídeo" variant="danger" (pressed)="removeVideo(lesson)" />
+                  }
+                  <app-icon-button icon="attach_file" label="Anexos" (pressed)="toggleAttachments(lesson)" />
+                  <app-icon-button icon="edit" label="Editar" (pressed)="openLessonEdit(lesson)" />
+                  <app-icon-button icon="delete_outline" label="Excluir" variant="danger" (pressed)="removeLesson(lesson)" />
+                </div>
+              </div>
+
+              @if (expandedLessonId() === lesson.id) {
+                <div class="attachments-panel">
+                  @for (attachment of attachmentsFor(lesson.id); track attachment.id) {
+                    <div class="attachment-row">
+                      <a [href]="attachment.url" target="_blank" rel="noopener">{{ attachment.fileName }}</a>
+                      <app-icon-button icon="delete_outline" label="Excluir anexo" variant="danger" (pressed)="removeAttachment(lesson, attachment)" />
+                    </div>
+                  }
+                  @if (attachmentsFor(lesson.id).length === 0) {
+                    <p class="hint">Nenhum anexo nesta aula.</p>
+                  }
+                  <label class="upload-btn small" [class.disabled]="uploadingAttachmentFor() === lesson.id">
+                    {{ uploadingAttachmentFor() === lesson.id ? 'Enviando...' : '+ Adicionar PDF' }}
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      hidden
+                      [disabled]="uploadingAttachmentFor() === lesson.id"
+                      (change)="onAttachmentSelected(lesson, $event)"
+                    />
+                  </label>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ===== Configurações ===== -->
+    @if (activeTab() === 'configuracoes') {
+      <section class="entity-form">
+        <h2>Preço das aulas avulsas</h2>
+        <p class="hint">
+          Vale só para as aulas soltas do curso (sem módulo). Cada módulo tem seu próprio preço,
+          configurado nele.
+        </p>
+
+        <form [formGroup]="pricingForm" (ngSubmit)="submitPricing()">
+          <div class="form-grid">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="free" />
+              Aulas avulsas gratuitas
+            </label>
+
+            @if (!pricingForm.controls.free.value) {
+              <label>
+                Preço (R$)
+                <input type="number" min="0" step="0.01" formControlName="bundlePrice" />
+              </label>
+            }
+          </div>
+
+          @if (pricingError()) {
+            <p class="error">{{ pricingError() }}</p>
+          }
+          @if (pricingSaved()) {
+            <p class="success">Preço salvo.</p>
+          }
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn" [disabled]="savingPricing()">
+              {{ savingPricing() ? 'Salvando...' : 'Salvar preço' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="entity-form danger-zone">
+        <h2>Excluir curso</h2>
+        <p class="hint">Remove o curso, todos os módulos e todas as aulas dele. Não pode ser desfeito.</p>
+        <div class="form-actions">
+          <app-icon-button icon="delete_outline" label="Excluir curso" [showLabel]="true" variant="danger" (pressed)="deleteCourse()" />
+        </div>
+      </section>
+    }
   } @else if (loading()) {
     <p class="hint">Carregando curso...</p>
   }

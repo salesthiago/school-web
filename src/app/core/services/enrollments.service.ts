@@ -11,15 +11,21 @@ export class EnrollmentsService {
     return this.http.get<Enrollment[]>(`${environment.apiUrl}/enrollments/mine`);
   }
 
-  enroll(moduleId: string) {
-    return this.http.post<Enrollment>(`${environment.apiUrl}/enrollments/enroll`, { moduleId });
+  /** Informe moduleId (matrícula no módulo) OU courseId (matrícula na trilha de aulas avulsas). */
+  enroll(target: { moduleId?: string; courseId?: string }) {
+    return this.http.post<Enrollment>(`${environment.apiUrl}/enrollments/enroll`, target);
   }
 
   moduleProgress(moduleId: string) {
     return this.http.get<ModuleProgressSummary>(`${environment.apiUrl}/progress/module/${moduleId}`);
   }
 
-  recordProgress(lessonId: string, moduleId: string, watchedSeconds: number) {
+  courseTrackProgress(courseId: string) {
+    return this.http.get<ModuleProgressSummary>(`${environment.apiUrl}/progress/course/${courseId}`);
+  }
+
+  /** Ausente moduleId = progresso de aula avulsa. */
+  recordProgress(lessonId: string, watchedSeconds: number, moduleId?: string) {
     return this.http.post(`${environment.apiUrl}/progress`, { lessonId, moduleId, watchedSeconds });
   }
 }
