@@ -158,18 +158,36 @@ export class StudentCourseDetailComponent implements OnInit {
   }
 
   continueModule(moduleId: string) {
-    this.enrollmentsService.moduleProgress(moduleId).subscribe((progress) => {
-      if (progress.nextLessonId) {
-        this.router.navigate(['/student/course-player', moduleId, progress.nextLessonId]);
-      }
+    forkJoin({
+      lessons: this.coursesService.listLessons(moduleId),
+      progress: this.enrollmentsService.moduleProgress(moduleId),
+    }).subscribe({
+      next: ({ lessons, progress }) => {
+        const lessonId = progress.nextLessonId ?? lessons[0]?.id;
+        if (lessonId) {
+          this.router.navigate(['/student/course-player', moduleId, lessonId]);
+        } else {
+          window.alert('Este módulo ainda não tem nenhuma aula publicada.');
+        }
+      },
+      error: () => window.alert('Não foi possível abrir o módulo. Tente novamente.'),
     });
   }
 
   continueCourseTrack() {
-    this.enrollmentsService.courseTrackProgress(this.courseId).subscribe((progress) => {
-      if (progress.nextLessonId) {
-        this.router.navigate(['/student/course-player/curso', this.courseId, progress.nextLessonId]);
-      }
+    forkJoin({
+      lessons: this.lessonsService.listByCourse(this.courseId),
+      progress: this.enrollmentsService.courseTrackProgress(this.courseId),
+    }).subscribe({
+      next: ({ lessons, progress }) => {
+        const lessonId = progress.nextLessonId ?? lessons[0]?.id;
+        if (lessonId) {
+          this.router.navigate(['/student/course-player/curso', this.courseId, lessonId]);
+        } else {
+          window.alert('Ainda não há aulas publicadas nesta trilha.');
+        }
+      },
+      error: () => window.alert('Não foi possível abrir a trilha de aulas. Tente novamente.'),
     });
   }
 
