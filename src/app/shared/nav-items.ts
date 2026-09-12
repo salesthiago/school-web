@@ -5,10 +5,8 @@ export const STUDENT_NAV_ITEMS: ShellNavItem[] = [
   { label: 'Meus Cursos', link: '/student/meus-cursos', exact: false, icon: 'menu_book' },
   { label: 'Explorar Cursos', link: '/student/explorar', exact: false, icon: 'explore' },
   { label: 'Certificados', link: '/student/certificates', exact: false, icon: 'workspace_premium' },
-  { label: 'Wishlist', link: '/student/wishlist', exact: false, icon: 'favorite' },
   { label: 'Histórico', link: '/student/historico', exact: false, icon: 'history' },
   { label: 'Perfil', link: '/student/profile', exact: false, icon: 'person' },
-  { label: 'Configurações', link: '/student/configuracoes', exact: false, icon: 'settings' },
   { label: 'Ajuda', link: '/student/ajuda', exact: false, icon: 'help_outline' },
 ];
 
