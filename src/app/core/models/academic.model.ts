@@ -12,6 +12,7 @@ export interface Institution {
   phone?: string;
   email?: string;
   website?: string;
+  landingPageEnabled?: boolean;
 }
 
 export interface Course {

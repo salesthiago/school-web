@@ -16,6 +16,9 @@
     <button type="button" [class.active]="activeTab() === 'certificado'" (click)="setTab('certificado')">
       Template Certificado
     </button>
+    <button type="button" [class.active]="activeTab() === 'landing'" (click)="setTab('landing')">
+      Landing Page
+    </button>
   </nav>
 
   <div class="tab-panel">
@@ -261,6 +264,37 @@
             }
           </div>
         }
+      }
+
+      @case ('landing') {
+        <form [formGroup]="landingForm" (ngSubmit)="submitLandingPage()" class="entity-form">
+          <h2>Página inicial pública</h2>
+          <p class="hint">
+            Quando ativa, a URL principal do site vira uma vitrine pública com todos os cursos
+            publicados — quem ainda não tem conta pode conhecer os cursos e só precisa entrar ou se
+            cadastrar no momento de se matricular. Professores e administradores continuam caindo
+            direto no próprio painel ao entrar; nada muda pra eles. Com a opção desativada, a URL
+            principal continua levando direto para a tela de login, como hoje.
+          </p>
+
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="landingPageEnabled" />
+            Landing page ativa
+          </label>
+
+          @if (landingError()) {
+            <p class="error">{{ landingError() }}</p>
+          }
+          @if (landingSuccess()) {
+            <p class="success">{{ landingSuccess() }}</p>
+          }
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn" [disabled]="landingSaving()">
+              {{ landingSaving() ? 'Salvando...' : 'Salvar configuração' }}
+            </button>
+          </div>
+        </form>
       }
     }
   </div>

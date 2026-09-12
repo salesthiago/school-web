@@ -41,7 +41,7 @@
     </form>
 
     <p class="switch">
-      Já tem conta? <a routerLink="/auth/login">Entrar</a>
+      Já tem conta? <a routerLink="/auth/login" [queryParams]="returnUrl ? { returnUrl } : {}">Entrar</a>
     </p>
   </div>
 </div>

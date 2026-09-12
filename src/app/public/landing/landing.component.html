@@ -1,0 +1,56 @@
+<app-public-header [name]="institution()?.name ?? 'GPschool'" [logoUrl]="institution()?.logoUrl" />
+
+<main class="landing">
+  <section class="hero">
+    <span class="ds-label hero-eyebrow">{{ institution()?.name ?? 'GPschool' }}</span>
+    <h1 class="ds-h1">Aprenda no seu ritmo, alcance seus objetivos</h1>
+    <p class="ds-body-lg hero-sub">
+      Cursos online com certificado para impulsionar sua carreira e seus conhecimentos.
+    </p>
+    <a class="ds-btn ds-btn-metal ds-btn-lg" href="#cursos">Ver cursos</a>
+  </section>
+
+  <section class="catalog" id="cursos">
+    <div class="section-head">
+      <h2 class="ds-h2">Cursos disponíveis</h2>
+    </div>
+
+    @if (loading()) {
+      <p class="hint">Carregando cursos...</p>
+    } @else if (courses().length === 0) {
+      <p class="hint">Nenhum curso publicado no momento.</p>
+    } @else {
+      <div class="card-grid">
+        @for (item of courses(); track item.course.id) {
+          <a class="ds-card course-card" [routerLink]="['/cursos', item.course.id]">
+            <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+              @if (item.course.coverImageUrl) {
+                <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+              } @else {
+                <span>{{ initial(item.course.title) }}</span>
+              }
+            </div>
+            <div class="card-body">
+              <strong class="ds-h3">{{ item.course.title }}</strong>
+              @if (item.teacherName) {
+                <span class="ds-caption">Prof. {{ item.teacherName }}</span>
+              }
+              @if (item.priceLabel) {
+                <span class="price ds-label">{{ item.priceLabel }}</span>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </section>
+
+  <footer class="landing-footer">
+    @if (footerLine()) {
+      <p class="ds-caption">{{ footerLine() }}</p>
+    }
+    @if (contactLine()) {
+      <p class="ds-caption">{{ contactLine() }}</p>
+    }
+  </footer>
+</main>

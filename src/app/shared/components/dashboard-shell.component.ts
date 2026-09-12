@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { InstitutionsService } from '../../core/services/institutions.service';
 import { NotificationsService } from '../../core/services/notifications.service';
@@ -42,6 +42,7 @@ export class DashboardShellComponent implements OnInit {
     public authService: AuthService,
     private institutionsService: InstitutionsService,
     private notificationsService: NotificationsService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -65,6 +66,11 @@ export class DashboardShellComponent implements OnInit {
   toggleNotifMenu() {
     this.notifMenuOpen.update((open) => !open);
     this.userMenuOpen.set(false);
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 
   markNotificationRead(notification: AppNotification) {

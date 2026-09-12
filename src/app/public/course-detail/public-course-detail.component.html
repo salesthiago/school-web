@@ -1,0 +1,76 @@
+<app-public-header [name]="institution()?.name ?? 'GPschool'" [logoUrl]="institution()?.logoUrl" />
+
+<main class="detail">
+  @if (loading()) {
+    <p class="hint">Carregando curso...</p>
+  } @else if (notFound()) {
+    <div class="ds-card empty-state">
+      <h1 class="ds-h2">Curso não encontrado</h1>
+      <p class="ds-body">Este curso não existe ou não está mais disponível.</p>
+      <a class="ds-btn ds-btn-outline" routerLink="/">Voltar aos cursos</a>
+    </div>
+  } @else {
+    <a class="back-link ds-caption" routerLink="/">‹ Voltar aos cursos</a>
+
+    @if (course()?.coverImageUrl) {
+      <div class="cover">
+        <img [src]="course()!.coverImageUrl" [alt]="course()!.title" />
+      </div>
+    } @else {
+      <div class="cover cover-fallback" [style.background]="thumbColor(course()!.title)">
+        <span>{{ initial(course()!.title) }}</span>
+      </div>
+    }
+
+    <div class="detail-head">
+      <div class="detail-head-text">
+        <h1 class="ds-h1">{{ course()!.title }}</h1>
+        @if (teacherName()) {
+          <p class="ds-body-lg teacher">Prof. {{ teacherName() }}</p>
+        }
+      </div>
+      <div class="detail-head-cta">
+        @if (startingPriceLabel()) {
+          <span class="ds-label price">{{ startingPriceLabel() }}</span>
+        }
+        <button type="button" class="ds-btn ds-btn-metal ds-btn-lg" (click)="enroll()">
+          Matricular-se
+        </button>
+      </div>
+    </div>
+
+    @if (course()?.description) {
+      <section class="ds-card description-card">
+        <h2 class="ds-h2">Sobre o curso</h2>
+        <div class="ds-body description-body" [innerHTML]="safeHtml(course()!.description)"></div>
+      </section>
+    }
+
+    @if (moduleRows().length > 0) {
+      <section class="ds-card modules-card">
+        <h2 class="ds-h2">Conteúdo do curso</h2>
+        <div class="modules-list">
+          @for (row of moduleRows(); track row.module.id) {
+            <div class="ds-row module-row">
+              <div class="module-text">
+                <strong class="ds-body-lg">{{ row.module.title }}</strong>
+                @if (row.module.workloadHours) {
+                  <span class="ds-caption">{{ row.module.workloadHours }}h de conteúdo</span>
+                }
+              </div>
+              <span class="ds-chip" [class.ds-chip-success]="row.priceLabel === 'Grátis'">{{
+                row.priceLabel
+              }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <div class="bottom-cta">
+      <button type="button" class="ds-btn ds-btn-metal ds-btn-lg" (click)="enroll()">
+        Matricular-se
+      </button>
+    </div>
+  }
+</main>

@@ -1,10 +1,23 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { homeGuard } from './core/guards/home.guard';
 import { ComingSoonComponent } from './shared/components/coming-soon.component';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'auth/login' },
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [homeGuard],
+    loadComponent: () => import('./public/landing/landing.component').then((m) => m.LandingComponent),
+  },
+  {
+    path: 'cursos/:id',
+    loadComponent: () =>
+      import('./public/course-detail/public-course-detail.component').then(
+        (m) => m.PublicCourseDetailComponent,
+      ),
+  },
 
   {
     path: 'auth/login',

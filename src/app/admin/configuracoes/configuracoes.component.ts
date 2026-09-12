@@ -8,7 +8,7 @@ import { Institution } from '../../core/models/academic.model';
 import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
 import { ADMIN_NAV_ITEMS } from '../../shared/nav-items';
 
-type SettingsTab = 'identidade' | 'bunny' | 'pagamento' | 'certificado';
+type SettingsTab = 'identidade' | 'bunny' | 'pagamento' | 'certificado' | 'landing';
 type ImageKind = 'logo' | 'loginBackground' | 'registerBackground' | 'studentBanner';
 
 @Component({
@@ -43,6 +43,15 @@ export class ConfiguracoesComponent implements OnInit {
     phone: [''],
     email: ['', [Validators.email]],
     website: [''],
+  });
+
+  // ---------- Página inicial (landing page pública) ----------
+  landingSaving = signal(false);
+  landingError = signal<string | null>(null);
+  landingSuccess = signal<string | null>(null);
+
+  landingForm = this.fb.nonNullable.group({
+    landingPageEnabled: [false],
   });
 
   // ---------- Integração Bunny ----------
@@ -87,6 +96,9 @@ export class ConfiguracoesComponent implements OnInit {
           email: institution.email ?? '',
           website: institution.website ?? '',
         });
+        this.landingForm.patchValue({
+          landingPageEnabled: institution.landingPageEnabled ?? false,
+        });
         this.brandingLoading.set(false);
       },
       error: () => {
@@ -115,6 +127,29 @@ export class ConfiguracoesComponent implements OnInit {
         this.brandingError.set('Não foi possível salvar as configurações.');
       },
     });
+  }
+
+  // ---------- Página inicial (landing page pública) ----------
+  submitLandingPage() {
+    const institution = this.institution();
+    if (!institution) return;
+    this.landingSaving.set(true);
+    this.landingError.set(null);
+    this.landingSuccess.set(null);
+
+    this.institutionsService
+      .update(institution.id, this.landingForm.getRawValue())
+      .subscribe({
+        next: (updated) => {
+          this.institution.set(updated);
+          this.landingSaving.set(false);
+          this.landingSuccess.set('Configuração da página inicial salva com sucesso.');
+        },
+        error: () => {
+          this.landingSaving.set(false);
+          this.landingError.set('Não foi possível salvar a configuração.');
+        },
+      });
   }
 
   onImageSelected(kind: ImageKind, event: Event) {

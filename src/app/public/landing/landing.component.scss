@@ -1,0 +1,109 @@
+.landing {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px 64px;
+}
+
+.hero {
+  padding: 40px 0 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  max-width: 640px;
+}
+
+.hero-eyebrow {
+  color: var(--ds-accent);
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+}
+
+.hero-sub {
+  color: var(--ds-fg-2);
+  margin: 0;
+}
+
+.catalog {
+  padding: 24px 0 8px;
+  scroll-margin-top: 80px;
+}
+
+.section-head {
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.hint {
+  color: var(--ds-fg-2);
+  font-size: 0.9rem;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.course-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card-thumb {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.9rem 1rem 1rem;
+
+  .price {
+    color: var(--ds-accent);
+  }
+}
+
+.landing-footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ds-divider);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  p {
+    margin: 0;
+    color: var(--ds-fg-2);
+  }
+}
+
+@media (min-width: 960px) {
+  .landing {
+    padding: 0 40px 80px;
+  }
+
+  .hero {
+    padding: 72px 0 56px;
+  }
+}

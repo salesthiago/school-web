@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { InstitutionsService } from '../../core/services/institutions.service';
 import { Institution } from '../../core/models/academic.model';
@@ -17,11 +17,13 @@ export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private institutionsService = inject(InstitutionsService);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   loading = signal(false);
   errorMessage = signal<string | null>(null);
   institution = signal<Institution | null>(null);
+  returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
 
   form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -40,7 +42,7 @@ export class RegisterComponent implements OnInit {
     this.errorMessage.set(null);
 
     this.authService.register(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/student']),
+      next: () => this.router.navigateByUrl(this.returnUrl ?? '/student'),
       error: (err) => {
         this.loading.set(false);
         this.errorMessage.set(
