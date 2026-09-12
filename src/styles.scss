@@ -1,9 +1,12 @@
 @import 'material-icons/iconfont/outlined.css';
 @import 'quill/dist/quill.snow.css';
 
+// Ponte de transição: telas ainda não migradas para o Graphite & Linen usam
+// --color-primary. Por padrão ele aponta para --ds-accent (tokens.css); o
+// ThemeService sobrescreve os dois com a cor da instituição em runtime.
 :root {
-  --color-primary: #6c4bf4;
-  --color-primary-dark: #5636d8;
+  --color-primary: var(--ds-accent, #b08d57);
+  --color-primary-dark: #96784a;
   --color-secondary: #26a69a;
   --color-secondary-dark: #1e8074;
 }
@@ -16,19 +19,6 @@ html,
 body {
   margin: 0;
   padding: 0;
-}
-
-body {
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
-  background: #f4f6fb;
-  color: #1a1d29;
 }
 
 button {

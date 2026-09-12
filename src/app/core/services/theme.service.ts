@@ -9,6 +9,9 @@ export class ThemeService {
     root.setProperty('--color-primary-dark', this.darken(institution.primaryColor, 0.15));
     root.setProperty('--color-secondary', institution.secondaryColor);
     root.setProperty('--color-secondary-dark', this.darken(institution.secondaryColor, 0.15));
+    // --ds-accent é o único ponto de troca de marca do Graphite & Linen
+    // (DESIGN.md §2) — instituições white-label trocam a cor por aqui.
+    root.setProperty('--ds-accent', institution.primaryColor);
   }
 
   private darken(hex: string, amount: number): string {

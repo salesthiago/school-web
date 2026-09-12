@@ -20,8 +20,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         left: 0;
         right: 0;
         display: flex;
-        background: #fff;
-        border-top: 1px solid #e6e9f0;
+        background: var(--ds-surface);
+        border-top: 1px solid var(--ds-divider);
         padding: 0.6rem 0 calc(0.6rem + env(safe-area-inset-bottom));
       }
       @media (min-width: 960px) {
@@ -33,12 +33,13 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         flex: 1;
         text-align: center;
         text-decoration: none;
-        color: #889;
+        color: var(--ds-fg-3);
         font-size: 0.78rem;
-        font-weight: 600;
+        font-weight: 500;
       }
       a.active {
-        color: #1565c0;
+        color: var(--ds-fg);
+        font-weight: 600;
       }
     `,
   ],

@@ -1,18 +1,21 @@
 <div class="shell">
+  <div class="frame-bar" aria-hidden="true"></div>
+
   <aside class="sidebar">
     <div class="brand">
-      <span class="brand-dot"></span>
-      GPschool
+      <span class="ds-well brand-well">G</span>
+      <span class="brand-name">GPschool</span>
     </div>
 
-    <nav class="nav">
+    <nav class="ds-panel-metal nav-panel">
       @for (item of navItems; track item.link) {
         <a
+          class="ds-nav-item"
           [routerLink]="item.link"
-          routerLinkActive="active"
+          routerLinkActive="is-active"
           [routerLinkActiveOptions]="{ exact: item.exact }"
         >
-          <app-icon [name]="item.icon" />
+          <span class="ds-well"><app-icon [name]="item.icon" [size]="18" /></span>
           {{ item.label }}
         </a>
       }
@@ -35,11 +38,11 @@
     }
   </aside>
 
-  <div class="main">
+  <div class="content-sheet">
     <header class="topbar">
       @if (searchLink) {
-        <a class="search" [routerLink]="searchLink">
-          <app-icon name="search" />
+        <a class="ds-search" [routerLink]="searchLink">
+          <app-icon name="search" [size]="18" />
           <span>{{ searchPlaceholder }}</span>
         </a>
       } @else {
@@ -48,7 +51,7 @@
 
       <div class="topbar-actions">
         <div class="menu-wrap">
-          <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
+          <button type="button" class="ds-btn ds-btn-ghost ds-btn-icon notif-btn" (click)="toggleNotifMenu()">
             <app-icon name="notifications" />
             @if (unreadCount() > 0) {
               <span class="badge">{{ unreadCount() }}</span>
@@ -75,15 +78,15 @@
           <div class="menu-wrap">
             <button type="button" class="user-btn" (click)="toggleUserMenu()">
               @if (user.avatarUrl) {
-                <img class="avatar" [src]="user.avatarUrl" alt="" />
+                <img class="ds-avatar avatar-sm" [src]="user.avatarUrl" alt="" />
               } @else {
-                <span class="avatar avatar-placeholder">{{ initial(user.name) }}</span>
+                <span class="ds-avatar avatar-sm">{{ initial(user.name) }}</span>
               }
               <span class="user-info">
                 <strong>Olá, {{ user.name }}</strong>
                 <span>{{ roleLabel(user.role) }}</span>
               </span>
-              <app-icon name="expand_more" />
+              <app-icon name="expand_more" [size]="18" />
             </button>
             @if (userMenuOpen()) {
               <div class="dropdown user-dropdown">
@@ -101,22 +104,22 @@
     <header class="mobile-header">
       @if (authService.currentUser(); as user) {
         <div>
-          <p class="hello">Olá, {{ user.name }}! 👋</p>
+          <p class="hello">Olá, {{ user.name }}</p>
           @if (mobileSubtitle) {
             <p class="subtitle">{{ mobileSubtitle }}</p>
           }
         </div>
         <div class="mobile-actions">
-          <button type="button" class="icon-btn" (click)="toggleNotifMenu()">
+          <button type="button" class="ds-btn ds-btn-ghost ds-btn-icon notif-btn" (click)="toggleNotifMenu()">
             <app-icon name="notifications" />
             @if (unreadCount() > 0) {
               <span class="badge">{{ unreadCount() }}</span>
             }
           </button>
           @if (user.avatarUrl) {
-            <img class="avatar" [src]="user.avatarUrl" alt="" />
+            <img class="ds-avatar" [src]="user.avatarUrl" alt="" />
           } @else {
-            <span class="avatar avatar-placeholder">{{ initial(user.name) }}</span>
+            <span class="ds-avatar">{{ initial(user.name) }}</span>
           }
         </div>
       }

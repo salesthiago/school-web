@@ -5,68 +5,96 @@
   searchPlaceholder="Buscar cursos, módulos, aulas..."
   mobileSubtitle="Vamos continuar seus estudos"
 >
-  <section class="hero">
-    <div class="hero-text">
-      <h1>Aprenda no seu ritmo,<br />alcance seus objetivos</h1>
-      <p>Cursos online com certificado para impulsionar sua carreira e seus conhecimentos.</p>
-      <a class="hero-cta" routerLink="/student/explorar">Explorar cursos</a>
-    </div>
-  </section>
-
-  @if (studentBannerUrl(); as bannerUrl) {
-    <section class="featured-banner">
-      <img [src]="bannerUrl" alt="Destaque" />
-    </section>
-  }
-
   @if (loading()) {
     <p class="hint">Carregando seus cursos...</p>
   } @else {
-    <section class="course-section">
-      <div class="section-head">
-        <h2>Continue aprendendo</h2>
-        <a routerLink="/student/meus-cursos">Ver todos</a>
-      </div>
-      @if (inProgress().length === 0) {
-        <p class="hint">Nenhum curso em andamento no momento.</p>
-      }
-      <div class="card-grid">
-        @for (item of inProgress(); track item.module.id) {
-          <a
-            class="course-card"
-            [routerLink]="['/student/course-player', item.module.id, item.progress.nextLessonId]"
-          >
-            <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
-              @if (item.course.coverImageUrl) {
-                <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+    @let hero = currentCourse;
+    @if (hero) {
+      <a
+        class="ds-card-metal hero-metal"
+        [routerLink]="['/student/course-player', hero.module.id, hero.progress.nextLessonId]"
+      >
+        <div class="hero-head">
+          <span class="ds-label hero-eyebrow">Continue de onde parou</span>
+          <h1 class="ds-h2">{{ hero.course.title }}</h1>
+          <p class="ds-body hero-sub">{{ hero.module.title }}</p>
+        </div>
+        <div class="ds-card-inset hero-inset">
+          <div class="hero-inset-body">
+            <div class="hero-thumb" [style.background]="thumbColor(hero.course.title)">
+              @if (hero.course.coverImageUrl) {
+                <img [src]="hero.course.coverImageUrl" [alt]="hero.course.title" />
               } @else {
-                <span>{{ initial(item.course.title) }}</span>
+                <span>{{ initial(hero.course.title) }}</span>
               }
             </div>
-            <div class="card-body">
-              <strong>{{ item.course.title }}</strong>
-              <span>{{ item.module.title }}</span>
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="item.progress.percentage"></div>
-              </div>
-              <span class="percentage">{{ item.progress.percentage }}%</span>
+            <div class="hero-inset-text">
+              <strong class="ds-tabular">{{ hero.progress.percentage }}% concluído</strong>
+              <span class="ds-caption">Toque para continuar</span>
             </div>
-          </a>
-        }
-      </div>
-    </section>
+          </div>
+          <div class="ds-progress hero-progress" [attr.aria-label]="hero.progress.percentage + '% concluído'">
+            <span [style.width.%]="hero.progress.percentage"></span>
+          </div>
+        </div>
+      </a>
+    } @else {
+      @if (studentBannerUrl(); as bannerUrl) {
+        <section class="featured-banner">
+          <img [src]="bannerUrl" alt="Destaque" />
+        </section>
+      } @else {
+        <section class="ds-card hero-empty">
+          <h1 class="ds-h1">Aprenda no seu ritmo, alcance seus objetivos</h1>
+          <p class="ds-body">Cursos online com certificado para impulsionar sua carreira e seus conhecimentos.</p>
+          <a class="ds-btn ds-btn-metal" routerLink="/student/explorar">Explorar cursos</a>
+        </section>
+      }
+    }
+
+    @let rest = inProgress().slice(1);
+    @if (rest.length > 0) {
+      <section class="course-section">
+        <div class="section-head">
+          <h2 class="ds-h2">Continue aprendendo</h2>
+          <a class="ds-link" routerLink="/student/meus-cursos">Ver todos</a>
+        </div>
+        <div class="card-grid">
+          @for (item of rest; track item.module.id) {
+            <a
+              class="ds-card course-card"
+              [routerLink]="['/student/course-player', item.module.id, item.progress.nextLessonId]"
+            >
+              <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
+                @if (item.course.coverImageUrl) {
+                  <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+                } @else {
+                  <span>{{ initial(item.course.title) }}</span>
+                }
+              </div>
+              <div class="card-body">
+                <strong class="ds-h3">{{ item.course.title }}</strong>
+                <span class="ds-caption">{{ item.module.title }}</span>
+                <div class="ds-progress"><span [style.width.%]="item.progress.percentage"></span></div>
+                <span class="percentage ds-label">{{ item.progress.percentage }}%</span>
+              </div>
+            </a>
+          }
+        </div>
+      </section>
+    }
 
     <section class="course-section">
       <div class="section-head">
-        <h2>Cursos recomendados para você</h2>
-        <a routerLink="/student/explorar">Ver todos</a>
+        <h2 class="ds-h2">Cursos recomendados para você</h2>
+        <a class="ds-link" routerLink="/student/explorar">Ver todos</a>
       </div>
       @if (recommended().length === 0) {
         <p class="hint">Novidades de cursos aparecerão aqui em breve.</p>
       }
       <div class="card-grid">
         @for (item of recommended(); track item.course.id) {
-          <a class="course-card recommended" [routerLink]="['/student/cursos', item.course.id]">
+          <a class="ds-card course-card recommended" [routerLink]="['/student/cursos', item.course.id]">
             <div class="card-thumb" [style.background]="thumbColor(item.course.title)">
               @if (item.course.coverImageUrl) {
                 <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
@@ -75,12 +103,12 @@
               }
             </div>
             <div class="card-body">
-              <strong>{{ item.course.title }}</strong>
+              <strong class="ds-h3">{{ item.course.title }}</strong>
               @if (item.teacherName) {
-                <span>Prof. {{ item.teacherName }}</span>
+                <span class="ds-caption">Prof. {{ item.teacherName }}</span>
               }
               @if (item.priceLabel) {
-                <span class="price">{{ item.priceLabel }}</span>
+                <span class="price ds-label">{{ item.priceLabel }}</span>
               }
             </div>
           </a>
@@ -90,20 +118,23 @@
 
     <section class="course-section">
       <div class="section-head">
-        <h2>Certificados disponíveis</h2>
-        <a routerLink="/student/certificates">Ver todos</a>
+        <h2 class="ds-h2">Certificados disponíveis</h2>
+        <a class="ds-link" routerLink="/student/certificates">Ver todos</a>
       </div>
       @if (certificates().length === 0) {
         <p class="hint">Seus certificados aparecerão aqui assim que forem emitidos.</p>
-      }
-      @for (cert of certificates(); track cert.id) {
-        <a class="course-row" routerLink="/student/certificates">
-          <div>
-            <strong>{{ cert.moduleTitle }}</strong>
-            <span>Código {{ cert.code }}</span>
-          </div>
-          <span class="percentage">Ver</span>
-        </a>
+      } @else {
+        <div class="ds-card cert-list">
+          @for (cert of certificates(); track cert.id) {
+            <a class="ds-row cert-row" routerLink="/student/certificates">
+              <div>
+                <strong class="ds-body-lg">{{ cert.moduleTitle }}</strong>
+                <span class="ds-caption">Código {{ cert.code }}</span>
+              </div>
+              <span class="ds-chip ds-chip-success ds-chip-dot">Emitido</span>
+            </a>
+          }
+        </div>
       }
     </section>
   }
