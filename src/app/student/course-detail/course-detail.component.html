@@ -87,6 +87,93 @@
         </div>
       }
 
+      <h2>Avaliações</h2>
+      @if (reviewsOverview(); as ov) {
+        <div class="review-summary">
+          <span class="rating-value">{{ ov.summary.count > 0 ? ov.summary.average : '—' }}</span>
+          <span class="stars" aria-hidden="true">
+            @for (i of stars(5); track i) {
+              <span [class.filled]="i < ov.summary.average">★</span>
+            }
+          </span>
+          <span class="count">
+            {{ ov.summary.count }} avaliaç{{ ov.summary.count === 1 ? 'ão' : 'ões' }}
+          </span>
+        </div>
+
+        @if (anyEnrolled() && reviewEligibility(); as elig) {
+          @if (!editingReview() && myReview(); as mine) {
+            <div class="my-review">
+              <strong>Sua avaliação</strong>
+              <div class="stars" aria-hidden="true">
+                @for (i of stars(5); track i) {
+                  <span [class.filled]="i < mine.rating">★</span>
+                }
+              </div>
+              @if (mine.comment) {
+                <p class="comment">{{ mine.comment }}</p>
+              }
+              <span class="status" [class]="mine.status">{{ reviewStatusLabel(mine.status) }}</span>
+              @if (mine.status === 'rejected' && mine.rejectionReason) {
+                <p class="hint">Motivo: {{ mine.rejectionReason }}</p>
+              }
+              <button class="link-btn" (click)="startEditReview()">Editar avaliação</button>
+            </div>
+          } @else if (elig.eligible) {
+            <div class="review-form">
+              <div class="stars input" aria-hidden="false">
+                @for (i of stars(5); track i) {
+                  <button type="button" [class.filled]="i < selectedRating()" (click)="setRating(i + 1)">★</button>
+                }
+              </div>
+              <textarea
+                placeholder="Conte como foi sua experiência com o curso (opcional)"
+                [value]="reviewComment()"
+                (input)="onCommentInput($event)"
+              ></textarea>
+              @if (reviewError()) {
+                <p class="error">{{ reviewError() }}</p>
+              }
+              @if (reviewSaved()) {
+                <p class="confirmed">✓ Avaliação enviada! Ela ficará visível após aprovação.</p>
+              }
+              <button
+                class="cta"
+                [disabled]="savingReview() || selectedRating() < 1"
+                (click)="submitReview()"
+              >
+                {{ savingReview() ? 'Enviando...' : 'Enviar avaliação' }}
+              </button>
+            </div>
+          } @else {
+            <p class="hint">
+              Conclua pelo menos {{ elig.threshold }}% do curso para avaliá-lo (você está em
+              {{ elig.percentage }}%).
+            </p>
+          }
+        }
+
+        @if (ov.reviews.length > 0) {
+          <div class="review-list">
+            @for (r of ov.reviews; track r.id) {
+              <div class="review-item">
+                <strong>{{ reviewerName(r) }}</strong>
+                <div class="stars" aria-hidden="true">
+                  @for (i of stars(5); track i) {
+                    <span [class.filled]="i < r.rating">★</span>
+                  }
+                </div>
+                @if (r.comment) {
+                  <p>{{ r.comment }}</p>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="hint">Ainda não há avaliações aprovadas para este curso.</p>
+        }
+      }
+
       @if (checkoutTarget(); as target) {
         <div class="checkout-overlay" (click)="closeCheckout()">
           <div class="checkout-panel" (click)="$event.stopPropagation()">

@@ -6,7 +6,9 @@ import { forkJoin } from 'rxjs';
 import { CoursesService } from '../../core/services/courses.service';
 import { InstitutionsService } from '../../core/services/institutions.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ReviewsService } from '../../core/services/reviews.service';
 import { Course, CourseModule, Institution } from '../../core/models/academic.model';
+import { CourseReviewsOverview, Review } from '../../core/models/review.model';
 import { PublicHeaderComponent } from '../../shared/components/public-header.component';
 
 interface ModuleRow {
@@ -32,6 +34,7 @@ export class PublicCourseDetailComponent implements OnInit {
   private coursesService = inject(CoursesService);
   private institutionsService = inject(InstitutionsService);
   private authService = inject(AuthService);
+  private reviewsService = inject(ReviewsService);
   private sanitizer = inject(DomSanitizer);
 
   loading = signal(true);
@@ -39,6 +42,7 @@ export class PublicCourseDetailComponent implements OnInit {
   institution = signal<Institution | null>(null);
   course = signal<Course | null>(null);
   moduleRows = signal<ModuleRow[]>([]);
+  reviewsOverview = signal<CourseReviewsOverview | null>(null);
 
   startingPriceLabel = computed(() => {
     const rows = this.moduleRows();
@@ -82,6 +86,20 @@ export class PublicCourseDetailComponent implements OnInit {
         this.loading.set(false);
       },
     });
+
+    this.reviewsService.publicOverview(this.courseId).subscribe((overview) => this.reviewsOverview.set(overview));
+  }
+
+  stars(count: number): number[] {
+    return Array.from({ length: count }, (_, i) => i);
+  }
+
+  reviewerName(review: Review): string {
+    const student = review.studentId as unknown;
+    if (student && typeof student === 'object' && 'name' in student) {
+      return (student as { name: string }).name;
+    }
+    return 'Aluno';
   }
 
   /** Descrição vem do editor rich-text (Quill) usado por professor/admin — conteúdo confiável, não de aluno. */

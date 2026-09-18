@@ -9,6 +9,7 @@
     <nav class="tabs">
       <button type="button" [class.active]="activeTab() === 'dados'" (click)="setTab('dados')">Dados do curso</button>
       <button type="button" [class.active]="activeTab() === 'estrutura'" (click)="setTab('estrutura')">Estrutura do curso</button>
+      <button type="button" [class.active]="activeTab() === 'avaliacoes'" (click)="setTab('avaliacoes')">Avaliações</button>
       <button type="button" [class.active]="activeTab() === 'configuracoes'" (click)="setTab('configuracoes')">Configurações</button>
     </nav>
 
@@ -371,6 +372,44 @@
                   <app-exam-manager scope="lesson" [targetId]="lesson.id" />
                 </div>
               }
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ===== Avaliações ===== -->
+    @if (activeTab() === 'avaliacoes') {
+      <div class="page-head">
+        <div class="struct-actions">
+          <button type="button" [class.active]="reviewStatusFilter() === 'pending'" (click)="setReviewStatusFilter('pending')" class="secondary-btn">Pendentes</button>
+          <button type="button" [class.active]="reviewStatusFilter() === 'approved'" (click)="setReviewStatusFilter('approved')" class="secondary-btn">Aprovadas</button>
+          <button type="button" [class.active]="reviewStatusFilter() === 'rejected'" (click)="setReviewStatusFilter('rejected')" class="secondary-btn">Rejeitadas</button>
+        </div>
+      </div>
+
+      @if (loadingReviews()) {
+        <p class="hint">Carregando avaliações...</p>
+      } @else if (reviews().length === 0) {
+        <p class="hint">Nenhuma avaliação {{ reviewStatusFilter() === 'pending' ? 'pendente' : reviewStatusFilter() === 'approved' ? 'aprovada' : 'rejeitada' }} por aqui.</p>
+      } @else {
+        <div class="lesson-list">
+          @for (review of reviews(); track review.id) {
+            <div class="lesson-card">
+              <div class="lesson-row">
+                <div class="lesson-info">
+                  <strong>{{ reviewerName(review) }} — {{ review.rating }}/5</strong>
+                  @if (review.comment) {
+                    <span>{{ review.comment }}</span>
+                  }
+                </div>
+                @if (reviewStatusFilter() === 'pending') {
+                  <div class="lesson-actions">
+                    <app-icon-button icon="check_circle" label="Aprovar" [disabled]="moderatingReviewId() === review.id" (pressed)="approveReview(review)" />
+                    <app-icon-button icon="cancel" label="Rejeitar" variant="danger" [disabled]="moderatingReviewId() === review.id" (pressed)="rejectReview(review)" />
+                  </div>
+                }
+              </div>
             </div>
           }
         </div>

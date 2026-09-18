@@ -8,8 +8,10 @@ import { CoursesService } from '../../core/services/courses.service';
 import { LessonsService } from '../../core/services/lessons.service';
 import { EnrollmentsService } from '../../core/services/enrollments.service';
 import { PaymentsService } from '../../core/services/payments.service';
+import { ReviewsService } from '../../core/services/reviews.service';
 import { Course, CourseModule, Enrollment } from '../../core/models/academic.model';
 import { CheckoutResponse, PaymentMethod } from '../../core/models/payment.model';
+import { CourseReviewsOverview, Review, ReviewEligibility } from '../../core/models/review.model';
 import { BottomNavComponent } from '../../shared/components/bottom-nav.component';
 import { DashboardShellComponent } from '../../shared/components/dashboard-shell.component';
 import { STUDENT_NAV_ITEMS } from '../../shared/nav-items';
@@ -70,6 +72,20 @@ export class StudentCourseDetailComponent implements OnInit {
   paymentConfirmed = signal(false);
   copiedField = signal<string | null>(null);
 
+  reviewsOverview = signal<CourseReviewsOverview | null>(null);
+  myReview = signal<Review | null>(null);
+  reviewEligibility = signal<ReviewEligibility | null>(null);
+  editingReview = signal(false);
+  selectedRating = signal(0);
+  reviewComment = signal('');
+  savingReview = signal(false);
+  reviewError = signal<string | null>(null);
+  reviewSaved = signal(false);
+
+  anyEnrolled = computed(
+    () => this.courseTrackEnrolled() || this.moduleViews().some((v) => v.state === 'enrolled'),
+  );
+
   private courseId!: string;
 
   constructor(
@@ -79,6 +95,7 @@ export class StudentCourseDetailComponent implements OnInit {
     private lessonsService: LessonsService,
     private enrollmentsService: EnrollmentsService,
     private paymentsService: PaymentsService,
+    private reviewsService: ReviewsService,
     private destroyRef: DestroyRef,
     private sanitizer: DomSanitizer,
   ) {}
@@ -122,6 +139,7 @@ export class StudentCourseDetailComponent implements OnInit {
             })),
         );
         this.loading.set(false);
+        this.loadReviews();
       },
       error: () => {
         this.notFound.set(true);
@@ -296,5 +314,73 @@ export class StudentCourseDetailComponent implements OnInit {
           this.load();
         }
       });
+  }
+
+  // ---------- Avaliações ----------
+
+  private loadReviews() {
+    this.reviewsService.publicOverview(this.courseId).subscribe((overview) => this.reviewsOverview.set(overview));
+
+    if (!this.anyEnrolled()) return;
+    this.reviewsService.mine(this.courseId).subscribe(({ review, eligibility }) => {
+      this.myReview.set(review);
+      this.reviewEligibility.set(eligibility);
+      this.selectedRating.set(review?.rating ?? 0);
+      this.reviewComment.set(review?.comment ?? '');
+    });
+  }
+
+  stars(count: number): number[] {
+    return Array.from({ length: count }, (_, i) => i);
+  }
+
+  setRating(value: number) {
+    this.selectedRating.set(value);
+  }
+
+  onCommentInput(event: Event) {
+    this.reviewComment.set((event.target as HTMLTextAreaElement).value);
+  }
+
+  startEditReview() {
+    const mine = this.myReview();
+    this.selectedRating.set(mine?.rating ?? 0);
+    this.reviewComment.set(mine?.comment ?? '');
+    this.reviewSaved.set(false);
+    this.reviewError.set(null);
+    this.editingReview.set(true);
+  }
+
+  submitReview() {
+    if (this.selectedRating() < 1) return;
+    this.savingReview.set(true);
+    this.reviewError.set(null);
+    this.reviewSaved.set(false);
+    this.reviewsService
+      .upsert(this.courseId, { rating: this.selectedRating(), comment: this.reviewComment().trim() || undefined })
+      .subscribe({
+        next: (review) => {
+          this.myReview.set(review);
+          this.savingReview.set(false);
+          this.reviewSaved.set(true);
+          this.editingReview.set(false);
+        },
+        error: (err) => {
+          this.savingReview.set(false);
+          this.reviewError.set(err?.error?.message ?? 'Não foi possível enviar sua avaliação.');
+        },
+      });
+  }
+
+  reviewStatusLabel(status: string): string {
+    return status === 'approved' ? 'Aprovada' : status === 'rejected' ? 'Rejeitada' : 'Em análise';
+  }
+
+  reviewerName(review: Review): string {
+    const student = review.studentId as unknown;
+    if (student && typeof student === 'object' && 'name' in student) {
+      return (student as { name: string }).name;
+    }
+    return 'Aluno';
   }
 }

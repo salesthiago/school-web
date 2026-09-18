@@ -73,6 +73,30 @@ export class DashboardShellComponent implements OnInit {
     this.router.navigate(['/auth/login']);
   }
 
+  switchingRole = signal(false);
+
+  canSwitchToStudent(): boolean {
+    return this.authService.currentUser()?.role === 'teacher';
+  }
+
+  canSwitchBackToTeacher(): boolean {
+    const user = this.authService.currentUser();
+    return user?.role === 'student' && user?.originalRole === 'teacher';
+  }
+
+  switchRole() {
+    this.switchingRole.set(true);
+    this.userMenuOpen.set(false);
+    this.authService.switchRole().subscribe({
+      next: () => {
+        this.switchingRole.set(false);
+        const role = this.authService.currentUser()?.role;
+        this.router.navigate([role === 'teacher' ? '/teacher' : '/student']);
+      },
+      error: () => this.switchingRole.set(false),
+    });
+  }
+
   markNotificationRead(notification: AppNotification) {
     if (notification.read) return;
     this.notificationsService.markRead(notification.id).subscribe(() => {

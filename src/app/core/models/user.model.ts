@@ -23,6 +23,8 @@ export interface User {
   email: string;
   phone?: string;
   role: Role;
+  /** Papel real do professor enquanto ele está "vendo como aluno" — ver AuthService.switchRole. */
+  originalRole?: Role | null;
   institutionId?: string;
   active?: boolean;
   avatarUrl?: string;

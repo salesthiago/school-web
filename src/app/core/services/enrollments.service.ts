@@ -30,6 +30,13 @@ export class EnrollmentsService {
     return this.http.get<ModuleProgressSummary>(`${environment.apiUrl}/progress/course/${courseId}`);
   }
 
+  /** Progresso geral do curso inteiro (módulos + trilha avulsa) — usado pro gate de avaliações. */
+  overallCourseProgress(courseId: string) {
+    return this.http.get<{ percentage: number; totalMandatoryLessons: number; completedLessons: number }>(
+      `${environment.apiUrl}/progress/course/${courseId}/overall`,
+    );
+  }
+
   /** Ausente moduleId = progresso de aula avulsa. */
   recordProgress(lessonId: string, watchedSeconds: number, moduleId?: string) {
     return this.http.post(`${environment.apiUrl}/progress`, { lessonId, moduleId, watchedSeconds });

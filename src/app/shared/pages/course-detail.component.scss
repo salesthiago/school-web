@@ -88,6 +88,12 @@ quill-editor {
 .struct-actions {
   display: flex;
   gap: 0.6rem;
+
+  .secondary-btn.active {
+    border-color: $accent;
+    color: $accent;
+    background: rgba(108, 75, 244, 0.08);
+  }
 }
 
 .section-title {

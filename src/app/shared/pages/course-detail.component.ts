@@ -8,7 +8,9 @@ import { CoursesService } from '../../core/services/courses.service';
 import { LessonsService } from '../../core/services/lessons.service';
 import { AttachmentsService } from '../../core/services/attachments.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ReviewsService } from '../../core/services/reviews.service';
 import { Attachment, Course, CourseModule, Lesson } from '../../core/models/academic.model';
+import { Review, ReviewStatus } from '../../core/models/review.model';
 import { DashboardShellComponent } from '../components/dashboard-shell.component';
 import { IconButtonComponent } from '../components/icon-button.component';
 import { ExamManagerComponent } from '../components/exam-manager.component';
@@ -17,7 +19,7 @@ import { ADMIN_NAV_ITEMS, TEACHER_NAV_ITEMS } from '../nav-items';
 const VIDEO_POLL_INTERVAL_MS = 8000;
 const VIDEO_POLL_MAX_ATTEMPTS = 100;
 
-type Tab = 'dados' | 'estrutura' | 'configuracoes';
+type Tab = 'dados' | 'estrutura' | 'avaliacoes' | 'configuracoes';
 type ModuleDeleteChoice = 'move-none' | 'move-module' | 'delete-all';
 
 @Component({
@@ -77,8 +79,14 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
   moduleDeleteTarget = signal<string | null>(null);
   deletingModule = signal(false);
 
+  reviewStatusFilter = signal<ReviewStatus>('pending');
+  reviews = signal<Review[]>([]);
+  loadingReviews = signal(false);
+  moderatingReviewId = signal<string | null>(null);
+
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private reviewsService = inject(ReviewsService);
   private pollingSubs = new Map<string, Subscription>();
 
   courseForm = this.fb.nonNullable.group({
@@ -136,6 +144,64 @@ export class CourseDetailComponent implements OnInit, OnDestroy {
 
   setTab(tab: Tab) {
     this.activeTab.set(tab);
+    if (tab === 'avaliacoes') {
+      this.loadReviews();
+    }
+  }
+
+  // ---------- Avaliações ----------
+
+  loadReviews() {
+    this.loadingReviews.set(true);
+    this.reviewsService.forModeration(this.id, this.reviewStatusFilter()).subscribe({
+      next: (reviews) => {
+        this.reviews.set(reviews);
+        this.loadingReviews.set(false);
+      },
+      error: () => this.loadingReviews.set(false),
+    });
+  }
+
+  setReviewStatusFilter(status: ReviewStatus) {
+    this.reviewStatusFilter.set(status);
+    this.loadReviews();
+  }
+
+  reviewerName(review: Review): string {
+    const student = review.studentId as unknown;
+    if (student && typeof student === 'object' && 'name' in student) {
+      return (student as { name: string }).name;
+    }
+    return 'Aluno';
+  }
+
+  approveReview(review: Review) {
+    this.moderatingReviewId.set(review.id);
+    this.reviewsService.moderate(review.id, { status: 'approved' }).subscribe({
+      next: () => {
+        this.moderatingReviewId.set(null);
+        this.reviews.update((list) => list.filter((r) => r.id !== review.id));
+      },
+      error: (err) => {
+        this.moderatingReviewId.set(null);
+        window.alert(err?.error?.message ?? 'Não foi possível aprovar a avaliação.');
+      },
+    });
+  }
+
+  rejectReview(review: Review) {
+    const reason = window.prompt('Motivo da rejeição (opcional):') ?? undefined;
+    this.moderatingReviewId.set(review.id);
+    this.reviewsService.moderate(review.id, { status: 'rejected', rejectionReason: reason }).subscribe({
+      next: () => {
+        this.moderatingReviewId.set(null);
+        this.reviews.update((list) => list.filter((r) => r.id !== review.id));
+      },
+      error: (err) => {
+        this.moderatingReviewId.set(null);
+        window.alert(err?.error?.message ?? 'Não foi possível rejeitar a avaliação.');
+      },
+    });
   }
 
   load() {

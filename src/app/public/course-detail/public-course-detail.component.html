@@ -67,6 +67,45 @@
       </section>
     }
 
+    @if (reviewsOverview(); as ov) {
+      <section class="ds-card reviews-card">
+        <h2 class="ds-h2">Avaliações</h2>
+        <div class="reviews-summary">
+          <span class="rating-value">{{ ov.summary.count > 0 ? ov.summary.average : '—' }}</span>
+          <span class="stars" aria-hidden="true">
+            @for (i of stars(5); track i) {
+              <span [class.filled]="i < ov.summary.average">★</span>
+            }
+          </span>
+          <span class="ds-caption">
+            {{ ov.summary.count }} avaliaç{{ ov.summary.count === 1 ? 'ão' : 'ões' }}
+          </span>
+        </div>
+
+        @if (ov.reviews.length > 0) {
+          <div class="reviews-list">
+            @for (r of ov.reviews; track r.id) {
+              <div class="ds-row review-row">
+                <div class="review-text">
+                  <strong class="ds-body-lg">{{ reviewerName(r) }}</strong>
+                  <span class="stars" aria-hidden="true">
+                    @for (i of stars(5); track i) {
+                      <span [class.filled]="i < r.rating">★</span>
+                    }
+                  </span>
+                  @if (r.comment) {
+                    <p class="ds-body">{{ r.comment }}</p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="ds-body hint">Ainda não há avaliações aprovadas para este curso.</p>
+        }
+      </section>
+    }
+
     <div class="bottom-cta">
       <button type="button" class="ds-btn ds-btn-metal ds-btn-lg" (click)="enroll()">
         Matricular-se

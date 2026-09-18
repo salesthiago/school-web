@@ -78,6 +78,12 @@ export class AuthService {
     return this.refreshInFlight$;
   }
 
+  switchRole(): Observable<AuthTokens> {
+    return this.http
+      .post<AuthTokens>(`${environment.apiUrl}/auth/switch-role`, {})
+      .pipe(tap((tokens) => this.storeTokens(tokens)));
+  }
+
   logout() {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);

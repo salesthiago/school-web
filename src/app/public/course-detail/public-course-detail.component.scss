@@ -131,6 +131,68 @@
   }
 }
 
+.reviews-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.stars {
+  display: inline-flex;
+  gap: 0.1rem;
+  color: #d8dbe4;
+  font-size: 1.05rem;
+  line-height: 1;
+
+  .filled {
+    color: #f4a638;
+  }
+}
+
+.reviews-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .rating-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0 -1.5rem;
+}
+
+.review-row {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+
+  &:first-child {
+    border-top: none;
+  }
+}
+
+.review-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+
+  p {
+    margin: 0;
+    color: var(--ds-fg-2);
+  }
+}
+
 .bottom-cta {
   display: flex;
   justify-content: center;

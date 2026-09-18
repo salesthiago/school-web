@@ -93,6 +93,16 @@
                 @if (profileLink) {
                   <a [routerLink]="profileLink"><app-icon name="person" />Meu perfil</a>
                 }
+                @if (canSwitchToStudent()) {
+                  <button type="button" [disabled]="switchingRole()" (click)="switchRole()">
+                    <app-icon name="swap_horiz" />Ver como aluno
+                  </button>
+                }
+                @if (canSwitchBackToTeacher()) {
+                  <button type="button" [disabled]="switchingRole()" (click)="switchRole()">
+                    <app-icon name="swap_horiz" />Voltar a professor
+                  </button>
+                }
                 <button type="button" (click)="logout()"><app-icon name="logout" />Sair</button>
               </div>
             }
