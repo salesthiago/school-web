@@ -58,10 +58,10 @@ export class StudentCourseDetailComponent implements OnInit {
   courseTrackHasLessons = signal(false);
   courseTrackEnrolled = signal(false);
   courseTrackState = computed<PurchasableState>(() =>
-    this.courseTrackEnrolled() ? 'enrolled' : this.course()?.free ? 'free' : 'paid',
+    this.courseTrackEnrolled() ? 'enrolled' : this.course()?.free || !this.course()?.bundlePrice ? 'free' : 'paid',
   );
   courseTrackPriceLabel = computed(() =>
-    this.course()?.free ? 'Grátis' : currencyFormatter.format(this.course()?.bundlePrice ?? 0),
+    this.course()?.free || !this.course()?.bundlePrice ? '' : currencyFormatter.format(this.course()!.bundlePrice!),
   );
 
   checkoutTarget = signal<CheckoutTarget | null>(null);
@@ -135,7 +135,7 @@ export class StudentCourseDetailComponent implements OnInit {
                   ? 'free'
                   : 'paid',
               priceLabel:
-                module.free || module.price === 0 ? 'Grátis' : currencyFormatter.format(module.price),
+                module.free || module.price === 0 ? '' : currencyFormatter.format(module.price),
             })),
         );
         this.loading.set(false);

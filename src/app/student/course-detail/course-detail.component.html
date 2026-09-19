@@ -29,9 +29,28 @@
         <div class="description" [innerHTML]="safeHtml(c.description)"></div>
       }
 
-      <h2>Módulos</h2>
-      @if (moduleViews().length === 0) {
-        <p class="hint">Nenhum módulo publicado ainda.</p>
+      @if (courseTrackHasLessons()) {
+        <div class="track-enroll">
+          @switch (courseTrackState()) {
+            @case ('enrolled') {
+              <button class="cta enrolled" (click)="continueCourseTrack()">Continuar</button>
+            }
+            @case ('free') {
+              <button class="cta" [disabled]="enrollingCourseTrack()" (click)="enrollFreeCourseTrack()">
+                {{ enrollingCourseTrack() ? 'Inscrevendo...' : 'Me Inscrever' }}
+              </button>
+            }
+            @case ('paid') {
+              <button class="cta" (click)="openCourseTrackCheckout()">Comprar — {{ courseTrackPriceLabel() }}</button>
+            }
+          }
+        </div>
+      }
+
+      @if (moduleViews().length) {
+        <h2>Módulos</h2>
+      } @else if (!courseTrackHasLessons()) {
+        <p class="hint">Este curso ainda não tem conteúdo publicado.</p>
       }
       @for (view of moduleViews(); track view.module.id) {
         <div class="module-card">
@@ -40,7 +59,7 @@
             @if (view.module.description) {
               <div class="module-description" [innerHTML]="safeHtml(view.module.description)"></div>
             }
-            <span class="meta">{{ view.module.workloadHours }}h · {{ view.priceLabel }}</span>
+            <span class="meta">{{ view.module.workloadHours }}h{{ view.priceLabel ? ' · ' + view.priceLabel : '' }}</span>
           </div>
 
           @switch (view.state) {
@@ -53,35 +72,11 @@
                 [disabled]="enrollingModuleId() === view.module.id"
                 (click)="enrollFree(view.module)"
               >
-                {{ enrollingModuleId() === view.module.id ? 'Matriculando...' : 'Matricular grátis' }}
+                {{ enrollingModuleId() === view.module.id ? 'Inscrevendo...' : 'Me Inscrever' }}
               </button>
             }
             @case ('paid') {
               <button class="cta" (click)="openCheckout(view.module)">Comprar — {{ view.priceLabel }}</button>
-            }
-          }
-        </div>
-      }
-
-      @if (courseTrackHasLessons()) {
-        <h2>Aulas do curso</h2>
-        <div class="module-card">
-          <div class="module-info">
-            <strong>Aulas avulsas</strong>
-            <span class="meta">{{ courseTrackPriceLabel() }}</span>
-          </div>
-
-          @switch (courseTrackState()) {
-            @case ('enrolled') {
-              <button class="cta enrolled" (click)="continueCourseTrack()">Continuar</button>
-            }
-            @case ('free') {
-              <button class="cta" [disabled]="enrollingCourseTrack()" (click)="enrollFreeCourseTrack()">
-                {{ enrollingCourseTrack() ? 'Matriculando...' : 'Matricular grátis' }}
-              </button>
-            }
-            @case ('paid') {
-              <button class="cta" (click)="openCourseTrackCheckout()">Comprar — {{ courseTrackPriceLabel() }}</button>
             }
           }
         </div>
@@ -178,7 +173,7 @@
         <div class="checkout-overlay" (click)="closeCheckout()">
           <div class="checkout-panel" (click)="$event.stopPropagation()">
             <button class="close-btn" (click)="closeCheckout()">✕</button>
-            <h3>Comprar "{{ target.type === 'module' ? target.module.title : 'Aulas avulsas' }}"</h3>
+            <h3>Comprar "{{ target.type === 'module' ? target.module.title : course()?.title }}"</h3>
 
             @if (!checkoutResult()) {
               <div class="method-toggle">

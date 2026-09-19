@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Enrollment, ModuleProgressSummary } from '../models/academic.model';
 
@@ -7,8 +8,14 @@ import { Enrollment, ModuleProgressSummary } from '../models/academic.model';
 export class EnrollmentsService {
   constructor(private http: HttpClient) {}
 
+  /**
+   * Descarta matrículas órfãs: se o curso foi apagado, o populate do backend devolve courseId null
+   * e nenhuma tela consegue exibir/abrir essa matrícula.
+   */
   myEnrollments() {
-    return this.http.get<Enrollment[]>(`${environment.apiUrl}/enrollments/mine`);
+    return this.http
+      .get<Enrollment[]>(`${environment.apiUrl}/enrollments/mine`)
+      .pipe(map((enrollments) => enrollments.filter((e) => !!e.courseId)));
   }
 
   /** Informe moduleId (matrícula no módulo) OU courseId (matrícula na trilha de aulas avulsas). */
