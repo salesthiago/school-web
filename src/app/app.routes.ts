@@ -87,7 +87,11 @@ export const routes: Routes = [
           import('./student/explore/explore.component').then((m) => m.ExploreComponent),
       },
       { path: 'wishlist', component: ComingSoonComponent, data: { title: 'Wishlist' } },
-      { path: 'historico', component: ComingSoonComponent, data: { title: 'Histórico' } },
+      {
+        path: 'historico',
+        loadComponent: () =>
+          import('./student/history/history.component').then((m) => m.HistoryComponent),
+      },
       {
         path: 'configuracoes',
         component: ComingSoonComponent,

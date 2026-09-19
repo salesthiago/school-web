@@ -1,0 +1,187 @@
+<app-dashboard-shell
+  [navItems]="navItems"
+  profileLink="/student/profile"
+  searchLink="/student/explorar"
+  searchPlaceholder="Buscar cursos, módulos, aulas..."
+  mobileSubtitle="Sua trajetória de estudos"
+>
+  <header class="page-head">
+    <h1 class="ds-h1">Histórico</h1>
+    <p class="ds-body sub">Tudo o que você já estudou, conquistou e pagou na plataforma.</p>
+  </header>
+
+  @if (loading()) {
+    <p class="hint">Carregando seu histórico...</p>
+  } @else {
+    <section class="stats" aria-label="Resumo">
+      <div class="ds-card stat">
+        <span class="ds-label">Concluídos</span>
+        <strong class="ds-h1 ds-tabular">{{ completedCount() }}</strong>
+      </div>
+      <div class="ds-card stat">
+        <span class="ds-label">Em andamento</span>
+        <strong class="ds-h1 ds-tabular">{{ inProgressCount() }}</strong>
+      </div>
+      <div class="ds-card stat">
+        <span class="ds-label">Horas concluídas</span>
+        <strong class="ds-h1 ds-tabular">{{ completedHours() }}h</strong>
+      </div>
+      <div class="ds-card stat">
+        <span class="ds-label">Certificados</span>
+        <strong class="ds-h1 ds-tabular">{{ certificates().length }}</strong>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="section-head">
+        <h2 class="ds-h2">Cursos e módulos</h2>
+        <div class="ds-segmented" role="tablist" aria-label="Filtrar por situação">
+          <button type="button" role="tab" [attr.aria-selected]="filter() === 'all'" (click)="setFilter('all')">
+            Todos
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="filter() === 'in-progress'"
+            (click)="setFilter('in-progress')"
+          >
+            Em andamento
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="filter() === 'completed'"
+            (click)="setFilter('completed')"
+          >
+            Concluídos
+          </button>
+        </div>
+      </div>
+
+      @if (visibleItems().length === 0) {
+        <div class="ds-card empty">
+          <p class="ds-body">
+            @if (items().length === 0) {
+              Você ainda não está matriculado em nenhum curso.
+            } @else {
+              Nenhum curso nesta situação.
+            }
+          </p>
+          @if (items().length === 0) {
+            <a class="ds-btn ds-btn-metal ds-btn-sm" routerLink="/student/explorar">Explorar cursos</a>
+          }
+        </div>
+      } @else {
+        <div class="ds-card list">
+          @for (item of visibleItems(); track item.key) {
+            <a class="ds-row entry" [routerLink]="item.link">
+              <div class="thumb" [style.background]="thumbColor(item.course.title)">
+                @if (item.course.coverImageUrl) {
+                  <img [src]="item.course.coverImageUrl" [alt]="item.course.title" />
+                } @else {
+                  <span>{{ initial(item.course.title) }}</span>
+                }
+              </div>
+
+              <div class="entry-main">
+                <strong class="ds-h3">{{ item.course.title }}</strong>
+                <span class="ds-caption meta">
+                  @if (item.subtitle) {
+                    {{ item.subtitle }} ·
+                  }
+                  @if (item.enrolledAt) {
+                    Matrícula em {{ formatDate(item.enrolledAt) }}
+                  }
+                  @if (item.workloadHours > 0) {
+                    · {{ item.workloadHours }}h
+                  }
+                </span>
+                @if (!item.completed) {
+                  <div class="ds-progress" [attr.aria-label]="item.percentage + '% concluído'">
+                    <span [style.width.%]="item.percentage"></span>
+                  </div>
+                }
+              </div>
+
+              <div class="entry-side">
+                @if (item.completed) {
+                  <span class="ds-chip ds-chip-success ds-chip-dot">Concluído</span>
+                } @else {
+                  <span class="ds-chip ds-chip-info ds-tabular">{{ item.percentage }}%</span>
+                }
+              </div>
+            </a>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="block">
+      <div class="section-head">
+        <h2 class="ds-h2">Certificados</h2>
+        @if (certificates().length > 0) {
+          <a class="ds-link" routerLink="/student/certificates">Ver todos</a>
+        }
+      </div>
+
+      @if (certificates().length === 0) {
+        <div class="ds-card empty">
+          <p class="ds-body">Você ainda não possui certificados emitidos.</p>
+        </div>
+      } @else {
+        <div class="ds-card list">
+          @for (cert of certificates(); track cert.id) {
+            <div class="ds-row entry">
+              <span class="ds-well ds-well-light"><app-icon name="workspace_premium" [size]="20" /></span>
+              <div class="entry-main">
+                <strong class="ds-h3">{{ cert.moduleTitle }}</strong>
+                <span class="ds-caption meta">
+                  Emitido em {{ formatDate(cert.issuedAt) }} · {{ cert.workloadHours }}h · Código {{ cert.code }}
+                </span>
+              </div>
+              <div class="entry-side">
+                <button type="button" class="ds-btn ds-btn-outline ds-btn-sm" (click)="download(cert)">
+                  Baixar PDF
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="block">
+      <div class="section-head">
+        <h2 class="ds-h2">Pagamentos</h2>
+      </div>
+
+      @if (payments().length === 0) {
+        <div class="ds-card empty">
+          <p class="ds-body">Nenhum pagamento até agora. Cursos gratuitos não geram cobrança.</p>
+        </div>
+      } @else {
+        <div class="ds-card list">
+          @for (payment of payments(); track payment.id) {
+            <div class="ds-row entry">
+              <span class="ds-well ds-well-light"><app-icon name="receipt_long" [size]="20" /></span>
+              <div class="entry-main">
+                <strong class="ds-h3">{{ payment.title }}</strong>
+                <span class="ds-caption meta">
+                  @if (payment.subtitle) {
+                    {{ payment.subtitle }} ·
+                  }
+                  {{ formatDate(payment.date) }} · {{ payment.methodLabel }}
+                </span>
+              </div>
+              <div class="entry-side payment-side">
+                <strong class="ds-tabular">{{ formatCurrency(payment.amount) }}</strong>
+                <span [class]="'ds-chip ' + payment.chipClass">{{ payment.statusLabel }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+</app-dashboard-shell>
+<app-bottom-nav />

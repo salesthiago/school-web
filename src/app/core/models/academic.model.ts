@@ -83,6 +83,7 @@ export interface Enrollment {
   moduleId: CourseModule | string | null;
   courseId: Course | string;
   status: 'active' | 'revoked';
+  createdAt?: string;
 }
 
 export interface ModuleProgressSummary {
